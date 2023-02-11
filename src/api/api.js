@@ -10,10 +10,15 @@ const instance = axios.create({
 });
 instance.interceptors.response.use(
     (response) => response,
-    (error) => alert(error)
+    (error) => console.log((error))
 );
 
 export const getOrganizationTypes = async () => {
     const response = await instance.get("organisation_types");
+    return response.data;
+};
+
+export const getDataForCreateTtn = async () => {
+    const response = await instance.post("get_data_for_create_ttn", { "orgType": 1 });
     return response.data;
 };

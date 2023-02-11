@@ -24,12 +24,12 @@ export const twoStepFields = [
         label: "Условия поставки",
         select: true,
         currencies: [
-            {value: "1",label: "Постоплата"},
-            {value: "2", label: "Предоплата"},
-            {value: "3", label: "Оплата"},
+            { index: "0", value: "1",label: "Постоплата" },
+            { index: "1", value: "2", label: "Предоплата" },
+            { index: "2", value: "3", label: "Оплата"},
         ],
     },
-    { index: "1", value: "2", label: "НДС" },
+    { index: "1", value: "2", label: "Ставка НДС, %" },
     { index: "2", value: "3", label: "Сумма НДС" },
     { index: "3", value: "4", label: "Общая сумма" },
 ];

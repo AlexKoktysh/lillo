@@ -21,6 +21,7 @@ function TextFieldControl(props) {
                 id={props.value}
                 size="small"
                 onChange={handleChange}
+                defaultValue=""
             >
                 {props.select && props.currencies.map((option) => (
                     <MenuItem key={option.value} value={option.value}>

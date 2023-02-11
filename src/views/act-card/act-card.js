@@ -51,7 +51,7 @@ function ActCard() {
                 {step === "2" && listTwoStep}
                 {step === "3" && listThreeStep}
                 {step === "4" && listFourStep}
-                <Form label="Заполняемая секция" step={step} items={steps} change={changeStep} />
+                <Form label="Заполняемая секция" value={step} items={steps} change={changeStep} />
             </div>
         </div>
     );

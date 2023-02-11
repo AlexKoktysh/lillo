@@ -3,7 +3,7 @@ import { FormControl, FormControlLabel, FormLabel, RadioGroup, Radio } from "@mu
 import "./form-control.scss";
 
 function Form(props) {
-    const [value, setValue] = useState(props.step || "");
+    const [value, setValue] = useState(props.value || "");
     const listItems = props.items.map((item) =>
         <FormControlLabel key={item.index} value={item.value} control={<Radio />} label={item.label} />
     );
