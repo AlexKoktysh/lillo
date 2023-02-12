@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import Form from "../../components/FormControl/form-control.js";
-import { checkType, firstStepFields, steps, twoStepFields, threeStepFields, fourStepFields } from "../../constants/index.js";
+import { checkType, steps, twoStepFields, threeStepFields, fourStepFields } from "../../constants/index.js";
 import "./act-card.scss";
 import TextFieldControl from "../../components/TextfieldControl/text-field-control.js";
 
-function ActCard() {
+function ActCard(props) {
     const rezultFieldsValue = {};
     const [value, setValue] = useState("");
     const [step, setStep] = useState("1");
+    const [first, setFirst] = useState([]);
 
     const handleChange = (value) => {
         setValue(value);
@@ -15,6 +16,24 @@ function ActCard() {
     useEffect(() => {
         value && console.log("Запрос на сервер", value);
     });
+    useEffect(() => {
+        const { docNumber, dogovorDictionary, dogovorNumbers } = props.ttn;
+        (docNumber || dogovorDictionary?.length || dogovorNumbers) && setFirst([
+            { index: "0", value: docNumber || "", label: "Номер счета" },
+            { index: "1", label: "Дата начала счета", date: true },
+            { index: "2", header: "Номер договора и дата начала" },
+            {
+                index: "3",
+                label: "Номер договора",
+                select: dogovorNumbers.length > 0,
+                currencies: dogovorNumbers.map((el, index) => {
+                    return { index: index, label: el };
+                }),
+            },
+            // { index: "3", value: "", label: "Дата начала договора", date: true },
+        ]);
+    }, [props.ttn]);
+    console.log("first", first);
 
     const changeStep = (value) => {
         setStep(value);
@@ -28,19 +47,19 @@ function ActCard() {
         console.log("Инпут измененен", field, value);
     };
 
-    const listFirstStep = firstStepFields.map((item) =>
+    const listFirstStep = first.map((item) =>
         !item.header
-            ? <TextFieldControl key={item.index} value={item.value} name={item.label} change={change} date={item.date} />
+            ? <TextFieldControl item={item} key={item.index} change={change} />
             : <div key={item.index} className="header">{item.header}</div>
     );
     const listTwoStep = twoStepFields.map((item) =>
-        <TextFieldControl select={item.select} currencies={item.currencies} key={item.index} value={item.value} name={item.label} change={change} />
+        <TextFieldControl item={item} key={item.index} change={change} />
     );
     const listThreeStep = threeStepFields.map((item) =>
-        <TextFieldControl key={item.index} value={item.value} name={item.label} change={change} />
+        <TextFieldControl key={item.index} item={item} change={change} />
     );
     const listFourStep = fourStepFields.map((item) =>
-        <TextFieldControl key={item.index} value={item.value} name={item.label} change={change} />
+        <TextFieldControl key={item.index} item={item} change={change} />
     );
 
     return (

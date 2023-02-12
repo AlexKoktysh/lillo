@@ -13,7 +13,17 @@ export const firstStepFields = [
     { index: "0", value: "1", label: "Номер счета" },
     { index: "1", value: "2", label: "Дата начала счета", date: true },
     { header: "Номер договора и дата начала", index: "5" },
-    { index: "2", value: "3", label: "Договор" },
+    {
+        index: "2",
+        value: "3",
+        label: "Договор",
+        select: true,
+        currencies: [
+            { index: "0", value: "1", label: "1" },
+            { index: "1", value: "2", label: "2" },
+            { index: "2", value: "3", label: "3" },
+        ],
+    },
     { index: "3", value: "4", label: "Дата начала договора", date: true },
 ];
 
@@ -24,7 +34,7 @@ export const twoStepFields = [
         label: "Условия поставки",
         select: true,
         currencies: [
-            { index: "0", value: "1",label: "Постоплата" },
+            { index: "0", value: "1", label: "Постоплата" },
             { index: "1", value: "2", label: "Предоплата" },
             { index: "2", value: "3", label: "Оплата"},
         ],

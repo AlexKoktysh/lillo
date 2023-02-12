@@ -13,7 +13,7 @@ function Form(props) {
     };
     useEffect(() => {
         value && props.change(value);
-    });
+    }, [value]);
 
     return (
         <FormControl className="container">

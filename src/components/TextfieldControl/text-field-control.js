@@ -11,23 +11,23 @@ function TextFieldControl(props) {
     };
 
     useEffect(() => {
-        props.change(props.name, value);
+        props.change(props.item.label, value);
     });
 
     return (
         <FormControl className="field">
-            {!props.date
+            {!props.item.date
                 ?
                 <TextField
-                    label={props.name}
-                    select={props.select}
-                    id={props.value}
+                    label={props.item.label}
+                    select={props.item.select}
+                    key={props.item.index}
                     size="small"
                     onChange={handleChange}
                     defaultValue=""
                 >
-                    {props.select && props.currencies.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
+                    {props.item.select && props.item.currencies.map((option) => (
+                        <MenuItem key={option.index} value={option.index}>
                             {option.label}
                         </MenuItem>
                     ))}
