@@ -30,7 +30,7 @@ function ActCard() {
 
     const listFirstStep = firstStepFields.map((item) =>
         !item.header
-            ? <TextFieldControl key={item.index} value={item.value} name={item.label} change={change} />
+            ? <TextFieldControl key={item.index} value={item.value} name={item.label} change={change} date={item.date} />
             : <div key={item.index} className="header">{item.header}</div>
     );
     const listTwoStep = twoStepFields.map((item) =>

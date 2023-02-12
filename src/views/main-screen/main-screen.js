@@ -10,8 +10,8 @@ function MainScreen() {
     useEffect(() => {
         const fetch = async () => {
             const response = await getOrganizationTypes();
-            const startValue = response.find((item) => !item.checked);
-            setValue(startValue.value);
+            const startValue = response.find((item) => item.checked);
+            startValue && setValue(startValue.value);
             setTypes(response);
         };
         fetch();

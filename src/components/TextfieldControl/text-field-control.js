@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { FormControl, TextField, MenuItem } from "@mui/material";
+import DatePickerControl from "../../components/DatePicker/date-picker.js";
 import "./text-field-control.scss";
 
 function TextFieldControl(props) {
@@ -15,20 +16,24 @@ function TextFieldControl(props) {
 
     return (
         <FormControl className="field">
-            <TextField
-                label={props.name}
-                select={props.select}
-                id={props.value}
-                size="small"
-                onChange={handleChange}
-                defaultValue=""
-            >
-                {props.select && props.currencies.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                    </MenuItem>
-                ))}
-            </TextField>
+            {!props.date
+                ?
+                <TextField
+                    label={props.name}
+                    select={props.select}
+                    id={props.value}
+                    size="small"
+                    onChange={handleChange}
+                    defaultValue=""
+                >
+                    {props.select && props.currencies.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                        </MenuItem>
+                    ))}
+                </TextField>
+                : <DatePickerControl />
+            }
         </FormControl>
     );
 }

@@ -11,10 +11,10 @@ export const checkType = [
 
 export const firstStepFields = [
     { index: "0", value: "1", label: "Номер счета" },
-    { index: "1", value: "2", label: "Дата начала счета" },
+    { index: "1", value: "2", label: "Дата начала счета", date: true },
     { header: "Номер договора и дата начала", index: "5" },
     { index: "2", value: "3", label: "Договор" },
-    { index: "3", value: "4", label: "Дата начала договора" },
+    { index: "3", value: "4", label: "Дата начала договора", date: true },
 ];
 
 export const twoStepFields = [
