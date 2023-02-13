@@ -4,18 +4,18 @@ import DatePickerControl from "../../components/DatePicker/date-picker.js";
 import "./text-field-control.scss";
 
 function TextFieldControl(props) {
-    const [value, setValue] = useState("");
+    const [value, setValue] = useState(props.item.value);
 
-    const handleChange = (event) => {
+    const changeInput = (event) => {
         setValue(event.target.value);
+        props.change(props.item.label, event.target.value);
     };
     const changeDate = (value) => {
         setValue(value);
     };
-
     useEffect(() => {
-        props.change(props.item.label, value);
-    });
+        setValue(props.item.value);
+    }, [props]);
 
     return (
         <FormControl className="field">
@@ -26,8 +26,8 @@ function TextFieldControl(props) {
                     select={props.item.select}
                     key={props.item.index}
                     size="small"
-                    onChange={handleChange}
-                    defaultValue=""
+                    onChange={changeInput}
+                    value={value}
                 >
                     {props.item.select && props.item.currencies.map((option) => (
                         <MenuItem key={option.index} value={option.index}>
