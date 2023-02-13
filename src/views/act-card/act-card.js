@@ -9,6 +9,7 @@ function ActCard(props) {
     const [value, setValue] = useState("");
     const [step, setStep] = useState("1");
     const [first, setFirst] = useState([]);
+    const [doc_start_date, setDocStartDate] = useState("");
 
     const handleChange = (value) => {
         setValue(value);
@@ -17,8 +18,8 @@ function ActCard(props) {
         value && console.log("Запрос на сервер", value);
     });
     useEffect(() => {
-        const { docNumber, dogovorDictionary, dogovorNumbers } = props.ttn;
-        (docNumber || dogovorDictionary?.length || dogovorNumbers) && setFirst([
+        const { docNumber, dogovorNumbers } = props.ttn;
+        (docNumber || dogovorNumbers) && setFirst([
             { index: "0", value: docNumber || "", label: "Номер счета" },
             { index: "1", label: "Дата начала счета", date: true },
             { index: "2", header: "Номер договора и дата начала" },
@@ -30,10 +31,9 @@ function ActCard(props) {
                     return { index: index, label: el };
                 }),
             },
-            // { index: "3", value: "", label: "Дата начала договора", date: true },
+            { index: "4", value: doc_start_date, label: "Дата начала договора", date: true },
         ]);
     }, [props.ttn]);
-    console.log("first", first);
 
     const changeStep = (value) => {
         setStep(value);
@@ -44,6 +44,10 @@ function ActCard(props) {
 
     const change = (field, value) => {
         rezultFieldsValue[field] = value;
+        if (field === "Номер договора") {
+            value !== "" && setDocStartDate(props.ttn.dogovorDictionary[value].doc_start_date);
+            first[4].value = props.ttn.dogovorDictionary[value]?.doc_start_date;
+        }
         console.log("Инпут измененен", field, value);
     };
 

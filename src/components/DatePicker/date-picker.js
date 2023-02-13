@@ -1,18 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TextField } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import moment from "moment/moment.js";
 
-function DatePickerControl() {
-    const [date, setDate] = useState(moment());
+function DatePickerControl(props) {
+    const defaultDate = props.item.item.value ? moment(props.item.item.value, 'DD.MM.YYYY').format('YYYY-MM-DD') : moment().format('YYYY-MM-DD');
+    const [date, setDate] = useState(defaultDate);
+    useEffect(() => {
+        setDate(defaultDate);
+        props.change(defaultDate);
+    }, [props.item.item.value]);
+    const change = (value) => {
+        const date = moment(value.$d).format('YYYY-MM-DD');
+        setDate(date);
+        props.change(date);
+    };
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
                 inputFormat="DD.MM.YYYY"
                 value={date}
-                onChange={(newValue) => setDate(newValue)}
+                onChange={(newValue) => change(newValue)}
                 renderInput={(params) => <TextField {...params} size="small" />}
             />
         </LocalizationProvider>

@@ -9,6 +9,9 @@ function TextFieldControl(props) {
     const handleChange = (event) => {
         setValue(event.target.value);
     };
+    const changeDate = (value) => {
+        setValue(value);
+    };
 
     useEffect(() => {
         props.change(props.item.label, value);
@@ -32,7 +35,7 @@ function TextFieldControl(props) {
                         </MenuItem>
                     ))}
                 </TextField>
-                : <DatePickerControl />
+                : <DatePickerControl item={props} change={changeDate} />
             }
         </FormControl>
     );
