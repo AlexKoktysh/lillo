@@ -164,9 +164,10 @@ function MainScreen() {
         const { contrAgents } = ttn;
         const controlValue = one[3].value;
         const items = three.map((item) => {
-            return {...item, value: controlValue ? contrAgents[controlValue][item.server] : ""};
+            return {...item, value: controlValue !== "" ? contrAgents[controlValue][item.server] : ""};
         });
         setThree(items);
+        setActiveForm(items);
     };
     useEffect(() => {
         if (step === "1") {
@@ -177,7 +178,6 @@ function MainScreen() {
         }
         if (step === "3") {
             setContrAgent();
-            setActiveForm(three);
         }
         if (step === "4") {
             setActiveForm(tnField);

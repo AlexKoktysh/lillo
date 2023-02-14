@@ -14,9 +14,9 @@ function TextFieldControl(props) {
         setValue(value);
         // props.change(props.item, value);
     };
-    // useEffect(() => {
-    //     setValue(props.item.value);
-    // }, [props]);
+    useEffect(() => {
+        setValue(props.item.value);
+    }, [props]);
 
     return (
         <FormControl className="field">
