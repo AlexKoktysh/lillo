@@ -10,6 +10,7 @@ function Form(props) {
 
     const handleChange = (event) => {
         setValue(event.target.value);
+        // props.change(event.target.value);
     };
     useEffect(() => {
         value && props.change(value);
