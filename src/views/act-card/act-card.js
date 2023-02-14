@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Form from "../../components/FormControl/form-control.js";
-import { checkType, steps, twoStepFields, threeStepFields, fourStepFields } from "../../constants/index.js";
+import { steps } from "../../constants/index.js";
 import "./act-card.scss";
 import TextFieldControl from "../../components/TextfieldControl/text-field-control.js";
 

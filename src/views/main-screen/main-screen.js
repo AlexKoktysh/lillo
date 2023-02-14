@@ -18,7 +18,6 @@ function MainScreen() {
     const [tnField, setTnField] = useState(tnFields);
     const [ttnField, setTtnField] = useState(ttnFields);
     const [carField, setCarField] = useState(carFields);
-    const [result, setResult] = useState([]);
     useEffect(() => {
         const fetch = async () => {
             const response = await getOrganizationTypes();
@@ -61,42 +60,39 @@ function MainScreen() {
             }
         }));
     };
-    const expensiveCalculation = useCallback((item) => {
+    const setValue = (label, parenValue) => {
         const { availableTransport } = ttn;
+        switch (label) {
+            case "Марка и гос. номер":
+                return `${availableTransport[parenValue]?.car_model} ${availableTransport[parenValue]?.car_number}`;
+            case "ФИО водителя":
+                return `${availableTransport[parenValue]?.last_name} ${availableTransport[parenValue]?.name} ${availableTransport[parenValue]?.second_name}`;
+            case "УНП перевозчика":
+                return `${availableTransport[parenValue]?.driver_unp ? availableTransport[parenValue]?.driver_unp : ""}`;
+            default:
+                return "";
+        }
+    };
+    const expensiveCalculation = (item) => {
         const controlsInput = item[0].controlInput;
         const parent = item.find((el) => el.select);
         if (parent.value !== "") {
-            const one = item.find((el) => el.label === "Марка и гос. номер");
-            const two = item.find((el) => el.label === "ФИО водителя");
-            const three = item.find((el) => el.label === "УНП перевозчика");
-            const oneObj = {
-                ...one,
-                value: `${availableTransport[parent.value]?.car_model} ${availableTransport[parent.value]?.car_number}`
-            };
-            const twoObj = {
-                ...two,
-                value: `${availableTransport[parent.value]?.last_name} ${availableTransport[parent.value]?.name} ${availableTransport[parent.value]?.second_name}`
-            };
-            const threeObj = {
-                ...three,
-                value: `${availableTransport[parent.value]?.driver_unp ? availableTransport[parent.value]?.driver_unp : ""}`
-            };
-            const result = item.map((element) => {
-                if (element.index === oneObj.index) {
-                    return oneObj;
-                }
-                if (element.index === twoObj.index) {
-                    return twoObj;
-                }
-                if (element.index === threeObj.index) {
-                    return threeObj;
-                }
-                return element;
+            const controlItems = item.filter((el) => controlsInput.find((element) => el.label === element));
+            const changeItems = controlItems.map((el) => {
+                return {
+                    ...el,
+                    value: setValue(el.label, parent.value),
+                };
             });
-            setCarField(result);
+            const resultObj = item.map((el) => {
+                const found = changeItems.find((element) => element.index === el.index);
+                if (found) return found;
+                return el;
+            });
+            setCarField(resultObj);
         }
-    }, [ttn]);
-    useMemo(() => expensiveCalculation(carField), [carField[0].value, expensiveCalculation]);
+    };
+    useMemo(() => expensiveCalculation(carField), [carField[0].value]);
 
     const changeOrganizationTypes = async (value) => {
         setIsTypes(value);
@@ -164,7 +160,7 @@ function MainScreen() {
         const { contrAgents } = ttn;
         const controlValue = one[3].value;
         const items = three.map((item) => {
-            return {...item, value: controlValue !== "" ? contrAgents[controlValue][item.server] : ""};
+            return {...item, value: controlValue !== "" ? contrAgents[controlValue][item.server] : "", disabled: controlValue !== ""};
         });
         setThree(items);
         setActiveForm(items);

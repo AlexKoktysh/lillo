@@ -12,7 +12,6 @@ function TextFieldControl(props) {
     };
     const changeDate = (value) => {
         setValue(value);
-        // props.change(props.item, value);
     };
     useEffect(() => {
         setValue(props.item.value);
@@ -29,6 +28,7 @@ function TextFieldControl(props) {
                     size="small"
                     onChange={changeInput}
                     value={value}
+                    disabled={props.item.disabled}
                 >
                     {props.item.select && props.item.currencies.map((option) => (
                         <MenuItem key={option.index} value={option.index}>

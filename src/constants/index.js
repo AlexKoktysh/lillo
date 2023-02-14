@@ -39,13 +39,13 @@ export const twoStepFields = [
 ];
 
 export const threeStepFields = [
-    { index: "0", value: "", label: "Наименование контрагента", server: "contragent_owner_last_name" },
-    { index: "1", value: "", label: "УНП/ИНН контрагента", server: "organisation_unp" },
-    { index: "2", value: "", label: "Короткое наименование организации", server: "short_organisation_name" },
-    { index: "3", value: "", label: "Расчетный счет", server: "checking_account" },
-    { index: "4", value: "", label: "Код банка", server: "bank_code" },
-    { index: "5", value: "", label: "Наименование банка", server: "bank_name" },
-    { index: "6", value: "", label: "Юридический адрес организации", server: "contragent_address" },
+    { index: "0", value: "", label: "Наименование контрагента", server: "contragent_owner_last_name", disabled: false },
+    { index: "1", value: "", label: "УНП/ИНН контрагента", server: "organisation_unp", disabled: false },
+    { index: "2", value: "", label: "Короткое наименование организации", server: "short_organisation_name", disabled: false },
+    { index: "3", value: "", label: "Расчетный счет", server: "checking_account", disabled: false },
+    { index: "4", value: "", label: "Код банка", server: "bank_code", disabled: false },
+    { index: "5", value: "", label: "Наименование банка", server: "bank_name", disabled: false },
+    { index: "6", value: "", label: "Юридический адрес организации", server: "contragent_address", disabled: false },
 ];
 
 export const fourStepFields = [
