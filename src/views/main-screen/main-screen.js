@@ -20,6 +20,8 @@ function MainScreen() {
             label: "Номер договора",
             select: true,
             currencies: [],
+            controlInput: "Дата начала договора",
+            controlValue: "",
         },
         { index: "4", value: "", label: "Дата начала договора", date: true },
     ]);
@@ -44,39 +46,24 @@ function MainScreen() {
         const response = await getDataForCreateTtn();
         setTtn(response);
     };
-    const updatedItems = (label, value) => {
-        const ind = activeForm.find((item) => item.label === label).index;
-        activeForm[ind].value = value;
-        const editItem = activeForm[ind];
-        if (label === "Номер договора") {
-            const dateItem = activeForm.find((el) => el.label === "Дата начала договора");
-            const index = activeForm.find((el) => el.label === "Дата начала договора").index;
-            dateItem.value = ttn.dogovorDictionary[`${value}`]?.doc_start_date;
-            setActiveForm(existingItems => {
-                return [
-                    ...existingItems.slice(0, ind),
-                    editItem,
-                    ...existingItems.slice(ind + 1, index),
-                    dateItem,
-                    ...existingItems.slice(index + 1, existingItems.length + 1),
-                ]
-            });
-        } else {
-            setActiveForm(existingItems => {
-                return [
-                    ...existingItems.slice(0, ind),
-                    editItem,
-                    ...existingItems.slice(ind + 1, existingItems.length + 1),
-                ]
-            });
-        }
+    const updatedItems = (changeItem, value) => {
+        const field = changeItem.controlInput ? changeItem.controlInput : changeItem.label;
+        const val = changeItem.controlValue ? changeItem.controlValue[value].doc_start_date : value;
+        setOne(one.map((item) => {
+            if (item.label === field) {
+                return { ...item, value: val };
+            } else {
+                if (item.label === changeItem.label) {
+                    return { ...item, value}
+                } else {
+                    return item;
+                }
+            }
+        }));
     };
     useEffect(() => {
         console.log("result", result);
     }, [result]);
-    useEffect(() => {
-        console.log("one", one);
-    }, [one]);
     useEffect(() => {
         const { docNumber, dogovorNumbers, dogovorDictionary } = ttn;
             const first = [
@@ -91,6 +78,8 @@ function MainScreen() {
                     currencies: dogovorDictionary?.map((el, index) => {
                         return { index: index, label: el.doc_number };
                     }),
+                    controlInput: "Дата начала договора",
+                    controlValue: dogovorDictionary,
                 },
                 { index: "4", value: "", label: "Дата начала договора", date: true },
             ];

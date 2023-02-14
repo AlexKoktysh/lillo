@@ -8,7 +8,7 @@ function TextFieldControl(props) {
 
     const changeInput = (event) => {
         setValue(event.target.value);
-        props.change(props.item.label, event.target.value);
+        props.change(props.item, event.target.value);
     };
     const changeDate = (value) => {
         setValue(value);

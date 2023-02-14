@@ -42,15 +42,6 @@ function ActCard(props) {
         step && props.changeStep(step);
     });
 
-    // const change = (field, value) => {
-    //     rezultFieldsValue[field] = value;
-    //     if (field === "Номер договора") {
-    //         value !== "" && setDocStartDate(props.ttn.dogovorDictionary[value].doc_start_date);
-    //         first[4].value = props.ttn.dogovorDictionary[value]?.doc_start_date;
-    //     }
-    //     console.log("Инпут измененен", field, value);
-    // };
-
     // const listFirstStep = first.map((item) =>
     //     !item.header
     //         ? <TextFieldControl item={item} key={item.index} change={change} />
@@ -65,8 +56,8 @@ function ActCard(props) {
     // const listFourStep = fourStepFields.map((item) =>
     //     <TextFieldControl key={item.index} item={item} change={change} />
     // );
-    const change = (label, value) => {
-        props.updatedItems(label, value);
+    const change = (changeItem, value) => {
+        props.updatedItems(changeItem, value);
     };
     const listItems = props.items.map((item) =>
         !item.header
