@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import Form from "../../components/FormControl/form-control.js";
 import ActCard from "../act-card/act-card.js";
 import { getOrganizationTypes, getDataForCreateTtn } from "../../api/api";
-import { firstStepFields, twoStepFields, threeStepFields, tnFields, ttnFields, carFields } from "../../constants/index.js";
+import { firstStepFields, twoStepFields, threeStepFields, tnFields, ttnFields, carFields, entityFields } from "../../constants/index.js";
 import "./main-screen.scss";
 import moment from "moment/moment.js";
 
@@ -11,6 +11,7 @@ function MainScreen() {
     const [organization_types, setTypes] = useState({});
     const [ttn, setTtn] = useState([]);
     const [step, setStep] = useState("");
+    const [type, setType] = useState("");
     const [activeForm, setActiveForm] = useState([]);
     const [one, setOne] = useState(firstStepFields);
     const [two, setTwo] = useState(twoStepFields);
@@ -18,6 +19,8 @@ function MainScreen() {
     const [tnField, setTnField] = useState(tnFields);
     const [ttnField, setTtnField] = useState(ttnFields);
     const [carField, setCarField] = useState(carFields);
+    const [entity, setEntity] = useState(entityFields);
+    const [pos, setPos] = useState([]);
     useEffect(() => {
         const fetch = async () => {
             const response = await getOrganizationTypes();
@@ -184,12 +187,15 @@ function MainScreen() {
         if (step === "6") {
             setActiveForm(carField);
         }
+        if (step === "7") {
+            setActiveForm(entity);
+        }
     }, [step, one, two, tnField, ttnField, carField]);
 
     return (
         <div id="main-screen">
             {organization_types.length && <Form label="Выберите вид контрагента" items={organization_types} value={isTypes} change={changeOrganizationTypes} />}
-            {isTypes && <ActCard changeStep={(step) => setStep(step)} items={activeForm} updatedItems={updatedItems} />}
+            {isTypes && <ActCard changePos={(pos) => setPos(pos)} changeType={(type) => setType(type)} changeStep={(step) => setStep(step)} items={activeForm} updatedItems={updatedItems} />}
         </div>
     );
 }

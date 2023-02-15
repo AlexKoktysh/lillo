@@ -4,9 +4,9 @@ export const organizationTypes = [
     { index: "2", value: "0", label: "Физическое лицо" },
 ];
 
-export const checkType = [
-    { index: "0", value: "1", label: "Вертикально" },
-    { index: "1", value: "2", label: "Горизонтально" },
+export const types = [
+    { index: "0", value: "0", label: "Вертикально" },
+    { index: "1", value: "1", label: "Горизонтально" },
 ];
 
 export const firstStepFields = [
@@ -82,6 +82,16 @@ export const ttnFields = [
     { index: "6", value: "", label: "ФИО" },
     { index: "7", value: "", label: "Данные ТТН" },
 ];
+export const entityFields = [
+    { index: "0", value: "", label: "Наименование товара" },
+    { index: "1", value: "", label: "Единица измерения" },
+    { index: "2", value: "", label: "Количество" },
+    { index: "3", value: "", label: "Цена за ед." },
+    { index: "4", value: "", label: "Стоимость по количеству" },
+    { index: "5", value: "", label: "Ставка НДС, %" },
+    { index: "6", value: "", label: "Сумма НДС" },
+    { index: "7", value: "", label: "Стоимость с НДС" },
+];
 export const carFields = [
     {
         index: "0",
@@ -108,4 +118,5 @@ export const steps = [
     { index: "3", value: "4", label: "4" },
     { index: "4", value: "5", label: "5" },
     { index: "5", value: "6", label: "6" },
+    { index: "6", value: "7", label: "7" },
 ];
