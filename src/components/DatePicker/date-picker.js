@@ -23,6 +23,7 @@ function DatePickerControl(props) {
                 value={date}
                 onChange={(newValue) => change(newValue)}
                 renderInput={(params) => <TextField {...params} size="small" />}
+                disabled={props.item.disabled}
             />
         </LocalizationProvider>
     );

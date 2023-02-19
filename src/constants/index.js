@@ -4,9 +4,9 @@ export const organizationTypes = [
     { index: "2", value: "0", label: "Физическое лицо" },
 ];
 
-export const types = [
-    { index: "0", value: "0", label: "Вертикально" },
-    { index: "1", value: "1", label: "Горизонтально" },
+export const unloading_basis = [
+    { value: 1, label: "Договор", index: 0 },
+    { value: 2, label: "Счет", index: 1 },
 ];
 
 export const firstStepFields = [
@@ -22,30 +22,23 @@ export const firstStepFields = [
         controlInput: "Дата начала договора",
         controlValue: "",
     },
-    { index: "4", value: "", label: "Дата начала договора", date: true },
-];
-
-export const twoStepFields = [
-    { 
-        index: "0",
-        value: "",
-        label: "Условия поставки",
-        select: true,
-        currencies: [],
-    },
-    { index: "1", value: "", label: "Ставка НДС, %" },
-    { index: "2", value: "", label: "Сумма НДС" },
-    { index: "3", value: "", label: "Общая сумма" },
+    { index: "4", value: "", label: "Дата начала договора", date: true, disabled: true },
 ];
 
 export const threeStepFields = [
-    { index: "0", value: "", label: "Наименование контрагента", server: "contragent_owner_last_name", disabled: false },
-    { index: "1", value: "", label: "УНП/ИНН контрагента", server: "organisation_unp", disabled: false },
-    { index: "2", value: "", label: "Короткое наименование организации", server: "short_organisation_name", disabled: false },
-    { index: "3", value: "", label: "Расчетный счет", server: "checking_account", disabled: false },
-    { index: "4", value: "", label: "Код банка", server: "bank_code", disabled: false },
-    { index: "5", value: "", label: "Наименование банка", server: "bank_name", disabled: false },
-    { index: "6", value: "", label: "Юридический адрес организации", server: "contragent_address", disabled: false },
+    { index: "0", value: "", label: "УНП/ИНН контрагента", server: "organisation_unp", disabled: true },
+    { index: "1", value: "", label: "Короткое наименование организации", server: "short_organisation_name", disabled: true },
+    { index: "2", value: "", label: "Расчетный счет", server: "checking_account", disabled: true },
+    { index: "3", value: "", label: "Код банка", server: "bank_code", disabled: true },
+    { index: "4", value: "", label: "Наименование банка", server: "bank_name", disabled: true },
+];
+export const threeTwoStepFields = [
+    { index: "0", value: "", label: "Фамилия уполномоченного лица", server: "contragent_owner_last_name", disabled: true },
+    { index: "1", value: "", label: "Имя уполномоченного лица", server: "contragent_owner_name", disabled: true },
+    { index: "2", value: "", label: "Отчество уполномоченного лица", server: "contragent_owner_second_name", disabled: true },
+    { index: "3", value: "", label: "Email уполномоченного лица", server: "contragent_owner_email", disabled: true },
+    { index: "4", value: "", label: "Телефон уполномоченного лица", server: "contragent_owner_phone", disabled: true },
+    { index: "5", value: "", label: "Адрес уполномоченного лица", server: "contragent_address", disabled: true },
 ];
 
 export const fourStepFields = [
@@ -63,7 +56,7 @@ export const fourStepFields = [
 
 ];
 export const tnFields = [
-    { index: "0", value: "", label: "Дата отгрузки" },
+    { index: "0", value: "", label: "Дата отгрузки", date: true },
     { index: "1", value: "", label: "Основания отгрузки" },
     { index: "2", value: "", label: "Отгрузку разрешил" },
     { index: "3", value: "", label: "Груз сдал" },
@@ -98,8 +91,9 @@ export const carFields = [
         value: "",
         label: "Транспорт",
         select: true,
+        autocomplete: true,
         currencies: [],
-        controlInput: ["Марка и гос. номер", "ФИО водителя", "УНП перевозчика"],
+        controlInput: ["Марка и гос. номер", "ФИО водителя", "УНП перевозчика", "Пункт погрузки", "Пункт разгрузки", "Номер путевого листа", "Вес груза"],
         controlValue: "",
     },
     { index: "1", value: "", label: "Марка и гос. номер" },
