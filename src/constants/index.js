@@ -58,22 +58,31 @@ export const fourStepFields = [
 export const tnFields = [
     { index: "0", value: "", label: "Дата отгрузки", date: true },
     { index: "1", value: "", label: "Основания отгрузки" },
-    { index: "2", value: "", label: "Отгрузку разрешил" },
-    { index: "3", value: "", label: "Груз сдал" },
-    { index: "4", value: "", label: "Товар к доставке принял" },
+    {
+        index: "2",
+        value: "",
+        label: "Отгрузку разрешил",
+        select: true,
+        currencies: [],
+    },
+    { 
+        index: "3",
+        value: "",
+        label: "Груз сдал",
+        select: true,
+        currencies: [],
+    },
+    { 
+        index: "4",
+        value: "",
+        label: "Товар к доставке принял",
+        select: true,
+        currencies: [],
+        controlInput: ["Доверенность", "ФИО"],
+        controlValue: "",
+    },
     { index: "5", value: "", label: "Доверенность" },
     { index: "6", value: "", label: "ФИО" },
-    { index: "7", value: "", label: "Данные ТН" },
-];
-export const ttnFields = [
-    { index: "0", value: "", label: "Дата отгрузки" },
-    { index: "1", value: "", label: "Основания отгрузки" },
-    { index: "2", value: "", label: "Отгрузку разрешил" },
-    { index: "3", value: "", label: "Груз сдал" },
-    { index: "4", value: "", label: "Товар к доставке принял" },
-    { index: "5", value: "", label: "Доверенность" },
-    { index: "6", value: "", label: "ФИО" },
-    { index: "7", value: "", label: "Данные ТТН" },
 ];
 export const entityFields = [
     { index: "0", value: "", label: "Наименование товара" },
@@ -84,6 +93,10 @@ export const entityFields = [
     { index: "5", value: "", label: "Ставка НДС, %" },
     { index: "6", value: "", label: "Сумма НДС" },
     { index: "7", value: "", label: "Стоимость с НДС" },
+];
+export const tnOrTtnField = [
+    { index: "0", value: "1", label: "ТН", checked: false },
+    { index: "1", value: "2", label: "ТТН", checked: false },
 ];
 export const carFields = [
     {
@@ -110,7 +123,5 @@ export const steps = [
     { index: "1", value: "2", label: "2" },
     { index: "2", value: "3", label: "3" },
     { index: "3", value: "4", label: "4" },
-    { index: "4", value: "5", label: "5" },
-    { index: "5", value: "6", label: "6" },
-    { index: "6", value: "7", label: "7" },
+    // { index: "4", value: "5", label: "5" },
 ];

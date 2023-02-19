@@ -22,3 +22,8 @@ export const getDataForCreateTtn = async () => {
     const response = await instance.post("get_data_for_create_ttn", { "orgType": 1 });
     return response.data;
 };
+
+export const fillTemplate = async (value) => {
+    const response = await instance.post("fill_template", value);
+    return response.data;
+};

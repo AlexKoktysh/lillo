@@ -1,12 +1,13 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import Form from "../../components/FormControl/form-control.js";
 import ActCard from "../act-card/act-card.js";
-import { getOrganizationTypes, getDataForCreateTtn } from "../../api/api";
-import { firstStepFields, twoStepFields, threeStepFields, tnFields, ttnFields, carFields, entityFields, unloading_basis, threeTwoStepFields } from "../../constants/index.js";
+import { getOrganizationTypes, getDataForCreateTtn, fillTemplate } from "../../api/api";
+import { firstStepFields, twoStepFields, threeStepFields, tnFields, carFields, entityFields, unloading_basis, threeTwoStepFields, tnOrTtnField, steps } from "../../constants/index.js";
 import "./main-screen.scss";
 import moment from "moment/moment.js";
 
 function MainScreen() {
+    const [serverResult, setServerResult] = useState([]);
     const [isTypes, setIsTypes] = useState("");
     const [organization_types, setTypes] = useState({});
     const [ttn, setTtn] = useState([]);
@@ -18,11 +19,13 @@ function MainScreen() {
     const [three, setThree] = useState(threeStepFields);
     const [threeTwo, setThreeTwo] = useState(threeTwoStepFields);
     const [tnField, setTnField] = useState(tnFields);
-    const [ttnField, setTtnField] = useState(ttnFields);
     const [carField, setCarField] = useState(carFields);
     const [entity, setEntity] = useState(entityFields);
     const [pos, setPos] = useState([]);
     const [unloadingBasis, setUnloadingBasis] = useState(unloading_basis);
+    const [tnOrTtn, setTnOrTtn] = useState(tnOrTtnField);
+    const [resSteps, setResSteps] = useState(steps);
+    const [isShowSample, setIsShowSample] = useState(false);
     useEffect(() => {
         const fetch = async () => {
             const response = await getOrganizationTypes();
@@ -32,6 +35,17 @@ function MainScreen() {
         };
         fetch();
     }, []);
+    useEffect(() => {
+        const item = tnOrTtn.find((el) => el.checked)?.label;
+        if (item === "ТТН") {
+            const step = { index: "4", value: "5", label: "5" };
+            const item = resSteps.find((el) => el.label === "5");
+            !item && setResSteps([...resSteps, step]);
+        } else {
+            const res = resSteps.filter((el) => el.label !== "5");
+            setResSteps(res);
+        }
+    }, [tnOrTtn]);
     const checkStep = (changeItem, value) => {
         switch (step) {
             case "1":
@@ -41,7 +55,9 @@ function MainScreen() {
                                 ? moment(changeItem.controlValue[value].doc_start_date, 'DD.MM.YYYY').format('YYYY-MM-DD')
                                 : value,
                 };
-            case "5":
+            case "3":
+                return { func: setTnField, items: tnField };
+            case "4":
                 return { func: setCarField, items: carField };
             default:
                 return {};
@@ -63,19 +79,65 @@ function MainScreen() {
             }
         }));
     };
+    const addCar = (item, value) => {
+        const x = item.currencies.find((el) => el.label === value);
+        if (x) {
+            const res = carField.map((el) => {
+                if (el.label === item.label) {
+                    return {...el, value: x.index};
+                } else {
+                    return el;
+                }
+            });
+            setCarField(res);
+        } else {
+            const ind = item.currencies.length;
+            const pushItem = {index: ind, label: value};
+            const res = carField.map((el) => {
+                if (el.label === item.label) {
+                    return {...el, value: ind, currencies: [...el.currencies, pushItem]};
+                } else {
+                    return el;
+                }
+            });
+            setCarField(res);
+        }
+    };
+    const setTn = (label, parenValue) => {
+        const { ttnPersons } = ttn;
+        switch (label) {
+            case "Доверенность":
+                const number = ttnPersons[parenValue]?.rights_number;
+                const date = ttnPersons[parenValue]?.rights_date;
+                const showTextDate = `от ${date}`
+                return number || date ? `${number} ${showTextDate}` : "";
+            case "ФИО":
+                const last_name = ttnPersons[parenValue]?.last_name;
+                const name = ttnPersons[parenValue]?.name;
+                const second_name = ttnPersons[parenValue]?.second_name;
+                return last_name || name || second_name ? `${last_name} ${name} ${second_name}` : "";
+            default:
+                return "";
+        }
+    };
     const setValue = (label, parenValue) => {
         const { availableTransport } = ttn;
         switch (label) {
             case "Марка и гос. номер":
-                return `${availableTransport[parenValue]?.car_model} ${availableTransport[parenValue]?.car_number}`;
+                const model = availableTransport[parenValue]?.car_model;
+                const number = availableTransport[parenValue]?.car_number;
+                return model || number ? `${model} ${number}` : "";
             case "ФИО водителя":
-                return `${availableTransport[parenValue]?.last_name} ${availableTransport[parenValue]?.name} ${availableTransport[parenValue]?.second_name}`;
+                const last_name = availableTransport[parenValue]?.last_name;
+                const name = availableTransport[parenValue]?.name;
+                const second_name = availableTransport[parenValue]?.second_name;
+                return last_name || name || second_name ? `${last_name} ${name} ${second_name}` : "";
             case "УНП перевозчика":
-                return `${availableTransport[parenValue]?.driver_unp ? availableTransport[parenValue]?.driver_unp : ""}`;
+                return `${availableTransport[parenValue]?.driver_unp || ""}`;
             case "Пункт погрузки":
-                return `${availableTransport[parenValue]?.loading_point_address}`;
+                return `${availableTransport[parenValue]?.loading_point_address || ""}`;
             case "Пункт разгрузки":
-                return `${availableTransport[parenValue]?.unloading_point_address}`;
+                return `${availableTransport[parenValue]?.unloading_point_address || ""}`;
             case "Номер путевого листа":
                 return `${availableTransport[parenValue]?.waybill_number || ""}`;
             case "Вес груза":
@@ -84,15 +146,15 @@ function MainScreen() {
                 return "";
         }
     };
-    const expensiveCalculation = (item) => {
-        const controlsInput = item[0].controlInput;
+    const expensiveCalculation = (item, funcValue, func, val) => {
+        const controlsInput = item[val].controlInput;
         const parent = item.find((el) => el.select);
         if (parent.value !== "") {
             const controlItems = item.filter((el) => controlsInput.find((element) => el.label === element));
             const changeItems = controlItems.map((el) => {
                 return {
                     ...el,
-                    value: setValue(el.label, parent.value),
+                    value: () => funcValue(el.label, parent.value),
                 };
             });
             const resultObj = item.map((el) => {
@@ -100,10 +162,11 @@ function MainScreen() {
                 if (found) return found;
                 return el;
             });
-            setCarField(resultObj);
+            func(resultObj);
         }
     };
-    useMemo(() => expensiveCalculation(carField), [carField[0].value]);
+    useMemo(() => expensiveCalculation(carField, setValue, setCarField, 0), [carField[0].value]);
+    useMemo(() => expensiveCalculation(tnField, setTn, setTnField, 4), [tnField[4].value]);
 
     const changeOrganizationTypes = async (value) => {
         setIsTypes(value);
@@ -111,10 +174,45 @@ function MainScreen() {
         setTtn(response);
     };
     useEffect(() => {
-        const { docNumber, dogovorNumbers, dogovorDictionary, deliveryConditions, availableTransport, unloadingBasis } = ttn;
+        const { docNumber, dogovorNumbers, dogovorDictionary, deliveryConditions, availableTransport, unloadingBasis, ttnPersons } = ttn;
         const deliv = deliveryConditions?.map((el, index) => {
             return { index: index, label: el.label, value: index + 1 };
         });
+        const fieldsEntity = [
+            { index: "0", value: "", label: "Дата отгрузки", date: true },
+            { index: "1", value: "", label: "Основания отгрузки" },
+            {
+                index: "2",
+                value: "",
+                label: "Отгрузку разрешил",
+                select: true,
+                currencies: ttnPersons?.map((el, index) => {
+                    return { ...el, index: index, label: el.last_name };
+                }),
+            },
+            { 
+                index: "3",
+                value: "",
+                label: "Груз сдал",
+                select: true,
+                currencies: ttnPersons?.map((el, index) => {
+                    return { ...el, index: index, label: el.last_name };
+                }),
+            },
+            { 
+                index: "4",
+                value: "",
+                label: "Товар к доставке принял",
+                select: true,
+                currencies: ttnPersons?.map((el, index) => {
+                    return { ...el, index: index, label: el.last_name };
+                }),
+                controlInput: ["Доверенность", "ФИО"],
+                controlValue: ttnPersons,
+            },
+            { index: "5", value: "", label: "Доверенность" },
+            { index: "6", value: "", label: "ФИО" },
+        ];
         const first = [
             { index: "0", value: docNumber || "", label: "Номер счета" },
             { index: "1", value: "", label: "Дата начала счета", date: true },
@@ -158,6 +256,7 @@ function MainScreen() {
         setCarField(transport);
         setOne(first);
         setTypesDelivery(deliv);
+        setTnField(fieldsEntity);
     }, [ttn]);
     const setContrAgent = () => {
         const { contrAgents } = ttn;
@@ -184,20 +283,40 @@ function MainScreen() {
             setActiveForm(tnField);
         }
         if (step === "4") {
-            setActiveForm(ttnField);
-        }
-        if (step === "5") {
             setActiveForm(carField);
         }
-        if (step === "6") {
+        if (step === "5") {
             setActiveForm(entity);
         }
-    }, [step, one, tnField, ttnField, carField]);
+    }, [step, one, tnField, carField]);
+    useEffect(() => {
+        const res = [...one, ...three, ...threeTwo, ...tnField, ...carField];
+        setServerResult(res);
+        const x = res.filter((el) => el.value === "");
+        if (x.length <= 5) {
+            setIsShowSample(true);
+        } else {
+            setIsShowSample(false)
+        }
+    }, [one, three, threeTwo, tnField, carField, entity]);
     const changeType = (value) => {
         const changeUnloadingBasis = unloadingBasis.map((el) => {
             return el.value == value ? { ...el, checked: true } : el;
         });
         setUnloadingBasis(changeUnloadingBasis);
+    };
+    const changeTnOrTtn = (val) => {
+        const changeItem = tnOrTtn.map((el) => {
+            if (el.value === val) {
+                return {...el, checked: true};
+            } else {
+                return {...el, checked: false};
+            }
+        });
+        setTnOrTtn(changeItem);
+    };
+    const clickSample = async () => {
+        await fillTemplate(serverResult);
     };
 
     return (
@@ -215,6 +334,12 @@ function MainScreen() {
                     items={activeForm}
                     updatedItems={updatedItems}
                     typesDelivery={typesDelivery}
+                    addCar={addCar}
+                    tnOrTtn={tnOrTtn}
+                    changeTnOrTtn={changeTnOrTtn}
+                    resSteps={resSteps}
+                    isShowSample={isShowSample}
+                    clickSample={clickSample}
                 />}
         </div>
     );

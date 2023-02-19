@@ -21,6 +21,7 @@ function DatePickerControl(props) {
             <DatePicker
                 inputFormat="DD.MM.YYYY"
                 value={date}
+                label={props.item.label}
                 onChange={(newValue) => change(newValue)}
                 renderInput={(params) => <TextField {...params} size="small" />}
                 disabled={props.item.disabled}
