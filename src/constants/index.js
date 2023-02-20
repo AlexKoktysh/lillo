@@ -85,7 +85,16 @@ export const tnFields = [
     { index: "6", value: "", label: "ФИО" },
 ];
 export const entityFields = [
-    { index: "0", value: "", label: "Наименование товара" },
+    {
+        index: "0",
+        value: "",
+        autocomplete: true,
+        select: true,
+        label: "Наименование товара",
+        currencies: [],
+        controlInput: ["Цена за ед."],
+        controlValue: "",
+    },
     { index: "1", value: "", label: "Единица измерения" },
     { index: "2", value: "", label: "Количество" },
     { index: "3", value: "", label: "Цена за ед." },

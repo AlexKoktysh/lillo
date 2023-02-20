@@ -59,6 +59,8 @@ function MainScreen() {
                 return { func: setTnField, items: tnField };
             case "4":
                 return { func: setCarField, items: carField };
+            case "5":
+                return { func: setEntity, items: entity };
             default:
                 return {};
         }
@@ -78,6 +80,20 @@ function MainScreen() {
                 }
             }
         }));
+    };
+    const addProduct = (item, value) => {
+        const y = Object.values(item.controlValue);
+        const x = y?.find((el) => el.product_name === value);
+        if (x) {
+            const res = entity.map((el) => {
+                if (el.label === item.label) {
+                    return {...el, value: x.id};
+                } else {
+                    return el;
+                }
+            })
+            setEntity(res);
+        }
     };
     const addCar = (item, value) => {
         const x = item.currencies.find((el) => el.label === value);
@@ -101,6 +117,17 @@ function MainScreen() {
                 }
             });
             setCarField(res);
+        }
+    };
+    const setProduct = (label, parenValue) => {
+        const { commodityDictionary } = ttn;
+        const obj = Object.values(commodityDictionary);
+        switch (label) {
+            case "Цена за ед.":
+                const x = obj.find((el) => el.id === parenValue).product_price.BYN;
+                return x ? `${x}` : "";
+            default:
+                return;
         }
     };
     const setTn = (label, parenValue) => {
@@ -167,6 +194,7 @@ function MainScreen() {
     };
     useMemo(() => expensiveCalculation(carField, setValue, setCarField, 0), [carField[0].value]);
     useMemo(() => expensiveCalculation(tnField, setTn, setTnField, 4), [tnField[4].value]);
+    useMemo(() => expensiveCalculation(entity, setProduct, setEntity, 0), [entity[0].value]);
 
     const changeOrganizationTypes = async (value) => {
         setIsTypes(value);
@@ -174,7 +202,7 @@ function MainScreen() {
         setTtn(response);
     };
     useEffect(() => {
-        const { docNumber, dogovorNumbers, dogovorDictionary, deliveryConditions, availableTransport, unloadingBasis, ttnPersons } = ttn;
+        const { docNumber, dogovorNumbers, dogovorDictionary, deliveryConditions, availableTransport, unloadingBasis, ttnPersons, commodityOptions, commodityDictionary } = ttn;
         const deliv = deliveryConditions?.map((el, index) => {
             return { index: index, label: el.label, value: index + 1 };
         });
@@ -251,12 +279,34 @@ function MainScreen() {
             { index: "6", value: "", label: "Номер путевого листа" },
             { index: "7", value: "", label: "Вес груза" },
         ];
+        const product = [
+            {
+                index: "0",
+                value: "",
+                autocomplete: true,
+                select: true,
+                label: "Наименование товара",
+                currencies: commodityOptions?.map((el, index) => {
+                    return { index: index, label: el };
+                }),
+                controlInput: ["Цена за ед."],
+                controlValue: commodityDictionary,
+            },
+            { index: "1", value: "", label: "Единица измерения" },
+            { index: "2", value: "", label: "Количество" },
+            { index: "3", value: "", label: "Цена за ед." },
+            { index: "4", value: "", label: "Стоимость по количеству" },
+            { index: "5", value: "", label: "Ставка НДС, %" },
+            { index: "6", value: "", label: "Сумма НДС" },
+            { index: "7", value: "", label: "Стоимость с НДС" },
+        ];
         const basis = unloadingBasis || [];
         setUnloadingBasis(basis);
         setCarField(transport);
         setOne(first);
         setTypesDelivery(deliv);
         setTnField(fieldsEntity);
+        setEntity(product);
     }, [ttn]);
     const setContrAgent = () => {
         const { contrAgents } = ttn;
@@ -335,6 +385,7 @@ function MainScreen() {
                     updatedItems={updatedItems}
                     typesDelivery={typesDelivery}
                     addCar={addCar}
+                    addProduct={addProduct}
                     tnOrTtn={tnOrTtn}
                     changeTnOrTtn={changeTnOrTtn}
                     resSteps={resSteps}

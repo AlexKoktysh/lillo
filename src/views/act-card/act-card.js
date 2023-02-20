@@ -52,9 +52,12 @@ function ActCard(props) {
     const addCar = (item, value) => {
         props.addCar(item, value);
     };
+    const addProduct = (item, value) => {
+        props.addProduct(item, value);
+    };
     const listItems = step !== "2" && props.items.map((item) =>
         !item.header
-            ? <TextFieldControl item={item} key={item.index} change={change} addCar={addCar} />
+            ? <TextFieldControl item={item} key={item.index} change={change} addCar={addCar} addProduct={addProduct} />
             : <div key={item.index} className="header">{item.header}</div>
     );
 

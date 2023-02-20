@@ -18,7 +18,14 @@ function TextFieldControl(props) {
         setValue(props.item.value);
     }, [props]);
     const saveCar = (value) => {
-        props.addCar(props.item, value);
+        switch(props.item.label) {
+            case "Наименование товара":
+                return props.addProduct(props.item, value);
+            case "Транспорт":
+                return props.addCar(props.item, value);
+            default:
+                return;
+        }
     };
 
     return (
