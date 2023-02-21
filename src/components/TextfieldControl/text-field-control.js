@@ -11,12 +11,13 @@ function TextFieldControl(props) {
         setValue(event.target.value);
         props.change(props.item, event.target.value);
     };
-    const changeDate = (value) => {
+    const changeDate = (label, value) => {
         setValue(value);
+        props.changeDate(label, value);
     };
     useEffect(() => {
         setValue(props.item.value);
-    }, [props]);
+    }, [props.item.value]);
     const saveCar = (value) => {
         switch(props.item.label) {
             case "Наименование товара":
@@ -51,7 +52,7 @@ function TextFieldControl(props) {
                                 ))}
                             </TextField>
                         )
-                        : (<Autocomplete value={value} key={props.item.index} label={props.item.label} currencies={props.item.currencies} saveCar={saveCar} />)
+                        : (<Autocomplete item={props.item} key={props.item.index} saveCar={saveCar} />)
                 )
                 : <DatePickerControl item={props.item} change={changeDate} />
             }

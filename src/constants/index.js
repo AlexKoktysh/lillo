@@ -9,10 +9,10 @@ export const unloading_basis = [
     { value: 2, label: "Счет", index: 1 },
 ];
 
-export const firstStepFields = [
-    { index: "0", value: "", label: "Номер счета" },
-    { index: "1", value: "", label: "Дата начала счета", date: true },
-    { index: "2", header: "Номер договора и дата начала" },
+export const dogovorDictionary_default = [
+    { index: "0", value: "", label: "Номер счета", require: true, fieldName: "docNumber" },
+    { index: "1", value: "", label: "Дата начала счета", date: true, require: true, fieldName: "check_start_date" },
+    { index: "2", header: "Номер договора и дата начала", require: false },
     {
         index: "3",
         value: "",
@@ -21,18 +21,20 @@ export const firstStepFields = [
         currencies: [],
         controlInput: "Дата начала договора",
         controlValue: "",
+        require: true,
+        fieldName: "doc_number",
     },
-    { index: "4", value: "", label: "Дата начала договора", date: true, disabled: true },
+    { index: "4", value: "", label: "Дата начала договора", date: true, disabled: true, require: true, fieldName: "doc_start_date" },
 ];
 
-export const threeStepFields = [
+export const organizationInformation_default = [
     { index: "0", value: "", label: "УНП/ИНН контрагента", server: "organisation_unp", disabled: true },
     { index: "1", value: "", label: "Короткое наименование организации", server: "short_organisation_name", disabled: true },
     { index: "2", value: "", label: "Расчетный счет", server: "checking_account", disabled: true },
     { index: "3", value: "", label: "Код банка", server: "bank_code", disabled: true },
     { index: "4", value: "", label: "Наименование банка", server: "bank_name", disabled: true },
 ];
-export const threeTwoStepFields = [
+export const personInformation_default = [
     { index: "0", value: "", label: "Фамилия уполномоченного лица", server: "contragent_owner_last_name", disabled: true },
     { index: "1", value: "", label: "Имя уполномоченного лица", server: "contragent_owner_name", disabled: true },
     { index: "2", value: "", label: "Отчество уполномоченного лица", server: "contragent_owner_second_name", disabled: true },
@@ -55,7 +57,7 @@ export const fourStepFields = [
     { index: "10", value: "11", label: "Масса груза" },
 
 ];
-export const tnFields = [
+export const contrAgents_default = [
     { index: "0", value: "", label: "Дата отгрузки", date: true },
     { index: "1", value: "", label: "Основания отгрузки" },
     {
@@ -84,7 +86,7 @@ export const tnFields = [
     { index: "5", value: "", label: "Доверенность" },
     { index: "6", value: "", label: "ФИО" },
 ];
-export const entityFields = [
+export const commodityDictionary_default = [
     {
         index: "0",
         value: "",
@@ -92,22 +94,23 @@ export const entityFields = [
         select: true,
         label: "Наименование товара",
         currencies: [],
-        controlInput: ["Цена за ед."],
+        controlInput: ["Цена за ед.", "Единица измерения"],
         controlValue: "",
+        fieldName: "product_name",
     },
-    { index: "1", value: "", label: "Единица измерения" },
-    { index: "2", value: "", label: "Количество" },
-    { index: "3", value: "", label: "Цена за ед." },
-    { index: "4", value: "", label: "Стоимость по количеству" },
-    { index: "5", value: "", label: "Ставка НДС, %" },
-    { index: "6", value: "", label: "Сумма НДС" },
-    { index: "7", value: "", label: "Стоимость с НДС" },
+    { index: "1", value: "", label: "Единица измерения", fieldName: "measure" },
+    { index: "2", value: "", label: "Количество", fieldName: "product_qty" },
+    { index: "3", value: "", label: "Цена за ед.", fieldName: "product_price" },
+    { index: "4", value: "", label: "Стоимость по количеству", fieldName: "product_cost" },
+    { index: "5", value: "", label: "Ставка НДС, %", fieldName: "ttn_product_vat" },
+    { index: "6", value: "", label: "Сумма НДС", fieldName: "ttn_product_vat_sum" },
+    { index: "7", value: "", label: "Стоимость с НДС", fieldName: "product_cost_with_vat" },
 ];
 export const tnOrTtnField = [
     { index: "0", value: "1", label: "ТН", checked: false },
     { index: "1", value: "2", label: "ТТН", checked: false },
 ];
-export const carFields = [
+export const availableTransport_default = [
     {
         index: "0",
         value: "",
@@ -132,5 +135,4 @@ export const steps = [
     { index: "1", value: "2", label: "2" },
     { index: "2", value: "3", label: "3" },
     { index: "3", value: "4", label: "4" },
-    // { index: "4", value: "5", label: "5" },
 ];

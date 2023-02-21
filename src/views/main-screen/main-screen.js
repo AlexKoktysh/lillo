@@ -1,27 +1,36 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Form from "../../components/FormControl/form-control.js";
 import ActCard from "../act-card/act-card.js";
 import { getOrganizationTypes, getDataForCreateTtn, fillTemplate } from "../../api/api";
-import { firstStepFields, twoStepFields, threeStepFields, tnFields, carFields, entityFields, unloading_basis, threeTwoStepFields, tnOrTtnField, steps } from "../../constants/index.js";
+import {
+    dogovorDictionary_default,
+    organizationInformation_default,
+    contrAgents_default,
+    availableTransport_default,
+    commodityDictionary_default,
+    unloading_basis,
+    personInformation_default,
+    tnOrTtnField,
+    steps,
+        } from "../../constants/index.js";
 import "./main-screen.scss";
 import moment from "moment/moment.js";
 
 function MainScreen() {
     const [serverResult, setServerResult] = useState([]);
-    const [isTypes, setIsTypes] = useState("");
+    const [organization_types_server, setOrganizationTypesServer] = useState("");
     const [organization_types, setTypes] = useState({});
-    const [ttn, setTtn] = useState([]);
+    const [response, setResponse] = useState([]);
     const [step, setStep] = useState("");
     const [typesDelivery, setTypesDelivery] = useState([]);
-    const [delivery, setDelivery] = useState("");
-    const [activeForm, setActiveForm] = useState([]);
-    const [one, setOne] = useState(firstStepFields);
-    const [three, setThree] = useState(threeStepFields);
-    const [threeTwo, setThreeTwo] = useState(threeTwoStepFields);
-    const [tnField, setTnField] = useState(tnFields);
-    const [carField, setCarField] = useState(carFields);
-    const [entity, setEntity] = useState(entityFields);
-    const [pos, setPos] = useState([]);
+    const [typesDelivery_server, setDelivery_server] = useState("");
+    const [activeFormItems, setActiveFormItems] = useState([]);
+    const [dogovorDictionary, setDogovorDictionary] = useState(dogovorDictionary_default);
+    const [organizationInformation, setOrganizationInformation] = useState(organizationInformation_default);
+    const [personInformation, setPersonInformation] = useState(personInformation_default);
+    const [contrAgents, setContrAgents] = useState(contrAgents_default);
+    const [availableTransport, setAvailableTransport] = useState(availableTransport_default);
+    const [commodityDictionary, setCommodityDictionary] = useState(commodityDictionary_default);
     const [unloadingBasis, setUnloadingBasis] = useState(unloading_basis);
     const [tnOrTtn, setTnOrTtn] = useState(tnOrTtnField);
     const [resSteps, setResSteps] = useState(steps);
@@ -30,7 +39,7 @@ function MainScreen() {
         const fetch = async () => {
             const response = await getOrganizationTypes();
             const startValue = response.find((item) => item.checked);
-            startValue && setIsTypes(startValue.value);
+            startValue && setOrganizationTypesServer(startValue.value);
             setTypes(response);
         };
         fetch();
@@ -49,27 +58,27 @@ function MainScreen() {
     const checkStep = (changeItem, value) => {
         switch (step) {
             case "1":
-                return { func: setOne,
-                    items: one,
+                return { setFunction: setDogovorDictionary,
+                    items: dogovorDictionary,
                     funcDate: changeItem.controlValue
                                 ? moment(changeItem.controlValue[value].doc_start_date, 'DD.MM.YYYY').format('YYYY-MM-DD')
                                 : value,
                 };
             case "3":
-                return { func: setTnField, items: tnField };
-            case "4":
-                return { func: setCarField, items: carField };
+                return { setFunction: setContrAgents, items: contrAgents };
             case "5":
-                return { func: setEntity, items: entity };
+                return { setFunction: setAvailableTransport, items: availableTransport };
+            case "4":
+                return { setFunction: setCommodityDictionary, items: commodityDictionary };
             default:
                 return {};
         }
     };
     const updatedItems = (changeItem, value) => {
         const field = changeItem?.controlInput ? changeItem.controlInput : changeItem.label;
-        const { func, items, funcDate } = checkStep(changeItem, value);
+        const { setFunction, items, funcDate } = checkStep(changeItem, value);
         const val = !Array.isArray(changeItem.controlInput) && changeItem.controlValue ? funcDate : value;
-        func(items?.map((item) => {
+        setFunction(items?.map((item) => {
             if (item.label === field) {
                 return { ...item, value: val };
             } else {
@@ -85,262 +94,273 @@ function MainScreen() {
         const y = Object.values(item.controlValue);
         const x = y?.find((el) => el.product_name === value);
         if (x) {
-            const res = entity.map((el) => {
+            const res = commodityDictionary.map((el) => {
                 if (el.label === item.label) {
                     return {...el, value: x.id};
                 } else {
                     return el;
                 }
             })
-            setEntity(res);
+            setCommodityDictionary(res);
         }
     };
     const addCar = (item, value) => {
-        const x = item.currencies.find((el) => el.label === value);
+        const x = item.currencies.find((el) => el.index === value);
         if (x) {
-            const res = carField.map((el) => {
+            const res = availableTransport.map((el) => {
                 if (el.label === item.label) {
                     return {...el, value: x.index};
                 } else {
                     return el;
                 }
             });
-            setCarField(res);
-        } else {
-            const ind = item.currencies.length;
-            const pushItem = {index: ind, label: value};
-            const res = carField.map((el) => {
-                if (el.label === item.label) {
-                    return {...el, value: ind, currencies: [...el.currencies, pushItem]};
-                } else {
-                    return el;
-                }
-            });
-            setCarField(res);
+            return setAvailableTransport(res);
         }
+        const ind = item.currencies.length;
+        const pushItem = {index: ind, label: value};
+        const res = availableTransport.map((el) => {
+            if (el.label === item.label) {
+                return {...el, value: ind, currencies: [...el.currencies, pushItem]};
+            } else {
+                return el;
+            }
+        });
+        setAvailableTransport(res);
     };
-    const setProduct = (label, parenValue) => {
-        const { commodityDictionary } = ttn;
-        const obj = Object.values(commodityDictionary);
+    const changeCommodityDictionary = (label, parenValue) => {
+        const obj = Object.values(response.commodityDictionary);
         switch (label) {
             case "Цена за ед.":
-                const x = obj.find((el) => el.id === parenValue).product_price.BYN;
-                return x ? `${x}` : "";
+                const price = obj.find((el) => el.id === parenValue).product_price.BYN;
+                return price ? `${price}` : "";
+            case "Единица измерения":
+                const measure = obj.find((el) => el.id === parenValue).measure;
+                return measure ? `${measure}` : "";
             default:
                 return;
         }
     };
-    const setTn = (label, parenValue) => {
-        const { ttnPersons } = ttn;
+    const changeContrAgents = (label, parenValue) => {
         switch (label) {
             case "Доверенность":
-                const number = ttnPersons[parenValue]?.rights_number;
-                const date = ttnPersons[parenValue]?.rights_date;
+                const number = response.ttnPersons[parenValue]?.rights_number;
+                const date = response.ttnPersons[parenValue]?.rights_date;
                 const showTextDate = `от ${date}`
                 return number || date ? `${number} ${showTextDate}` : "";
             case "ФИО":
-                const last_name = ttnPersons[parenValue]?.last_name;
-                const name = ttnPersons[parenValue]?.name;
-                const second_name = ttnPersons[parenValue]?.second_name;
+                const last_name = response.ttnPersons[parenValue]?.last_name;
+                const name = response.ttnPersons[parenValue]?.name;
+                const second_name = response.ttnPersons[parenValue]?.second_name;
                 return last_name || name || second_name ? `${last_name} ${name} ${second_name}` : "";
             default:
                 return "";
         }
     };
-    const setValue = (label, parenValue) => {
-        const { availableTransport } = ttn;
+    const changeAvailableTransport = (label, parenValue) => {
         switch (label) {
             case "Марка и гос. номер":
-                const model = availableTransport[parenValue]?.car_model;
-                const number = availableTransport[parenValue]?.car_number;
+                const model = response.availableTransport[parenValue]?.car_model;
+                const number = response.availableTransport[parenValue]?.car_number;
                 return model || number ? `${model} ${number}` : "";
             case "ФИО водителя":
-                const last_name = availableTransport[parenValue]?.last_name;
-                const name = availableTransport[parenValue]?.name;
-                const second_name = availableTransport[parenValue]?.second_name;
+                const last_name = response.availableTransport[parenValue]?.last_name;
+                const name = response.availableTransport[parenValue]?.name;
+                const second_name = response.availableTransport[parenValue]?.second_name;
                 return last_name || name || second_name ? `${last_name} ${name} ${second_name}` : "";
             case "УНП перевозчика":
-                return `${availableTransport[parenValue]?.driver_unp || ""}`;
+                return `${response.availableTransport[parenValue]?.driver_unp || ""}`;
             case "Пункт погрузки":
-                return `${availableTransport[parenValue]?.loading_point_address || ""}`;
+                return `${response.availableTransport[parenValue]?.loading_point_address || ""}`;
             case "Пункт разгрузки":
-                return `${availableTransport[parenValue]?.unloading_point_address || ""}`;
+                return `${response.availableTransport[parenValue]?.unloading_point_address || ""}`;
             case "Номер путевого листа":
-                return `${availableTransport[parenValue]?.waybill_number || ""}`;
+                return `${response.availableTransport[parenValue]?.waybill_number || ""}`;
             case "Вес груза":
-                return `${availableTransport[parenValue]?.cargo || ""}`;
+                return `${response.availableTransport[parenValue]?.cargo || ""}`;
             default:
                 return "";
         }
     };
-    const expensiveCalculation = (item, funcValue, func, val) => {
-        const controlsInput = item[val].controlInput;
-        const parent = item.find((el) => el.select);
+    const expensiveCalculation = (items, changeFunction, setFunction, val) => {
+        const controlsInput = items[val].controlInput;
+        const parent = items.find((el) => el.select);
         if (parent.value !== "") {
-            const controlItems = item.filter((el) => controlsInput.find((element) => el.label === element));
+            const controlItems = items.filter((el) => controlsInput.find((element) => el.label === element));
             const changeItems = controlItems.map((el) => {
                 return {
                     ...el,
-                    value: () => funcValue(el.label, parent.value),
+                    value: changeFunction(el.label, parent.value),
                 };
             });
-            const resultObj = item.map((el) => {
+            const resultObj = items.map((el) => {
                 const found = changeItems.find((element) => element.index === el.index);
                 if (found) return found;
                 return el;
             });
-            func(resultObj);
+            setFunction(resultObj);
         }
     };
-    useMemo(() => expensiveCalculation(carField, setValue, setCarField, 0), [carField[0].value]);
-    useMemo(() => expensiveCalculation(tnField, setTn, setTnField, 4), [tnField[4].value]);
-    useMemo(() => expensiveCalculation(entity, setProduct, setEntity, 0), [entity[0].value]);
+    useMemo(() => expensiveCalculation(availableTransport, changeAvailableTransport, setAvailableTransport, 0), [availableTransport[0].value]);
+    useMemo(() => expensiveCalculation(contrAgents, changeContrAgents, setContrAgents, 4), [contrAgents[4].value]);
+    useMemo(() => expensiveCalculation(commodityDictionary, changeCommodityDictionary, setCommodityDictionary, 0), [commodityDictionary[0].value]);
 
     const changeOrganizationTypes = async (value) => {
-        setIsTypes(value);
+        setOrganizationTypesServer(value);
         const response = await getDataForCreateTtn();
-        setTtn(response);
+        setResponse(response);
     };
     useEffect(() => {
-        const { docNumber, dogovorNumbers, dogovorDictionary, deliveryConditions, availableTransport, unloadingBasis, ttnPersons, commodityOptions, commodityDictionary } = ttn;
-        const deliv = deliveryConditions?.map((el, index) => {
+        const x = response.length && response.commodityDictionary.filter((el) => el.value === "");
+        if (!x?.length) {
+            const res = commodityDictionary.map((el) => {
+                return {  fieldName: el.fieldName, value: el.value }
+            });
+            res.push({ fieldName: "product_qty", value: "1"});
+            res.push({ fieldName: "ttnProductQty", value: "1"});
+            res.push({ fieldName: "fk_organisation", value: ""});
+            res.push({ fieldName: "fk_user", value: ""});
+            res.push({ fieldName: "notes", value: ""});
+            res.push({ fieldName: "country_import", value: ""});
+            res.push({ fieldName: "qty_cargo_place", value: ""});
+            res.push({ fieldName: "product_weight", value: ""});
+        }
+    }, [commodityDictionary]);
+    useEffect(() => {
+        const typesDelivery_server = response.deliveryConditions?.map((el, index) => {
             return { index: index, label: el.label, value: index + 1 };
         });
-        const fieldsEntity = [
-            { index: "0", value: "", label: "Дата отгрузки", date: true },
-            { index: "1", value: "", label: "Основания отгрузки" },
-            {
-                index: "2",
-                value: "",
-                label: "Отгрузку разрешил",
-                select: true,
-                currencies: ttnPersons?.map((el, index) => {
-                    return { ...el, index: index, label: el.last_name };
-                }),
-            },
-            { 
-                index: "3",
-                value: "",
-                label: "Груз сдал",
-                select: true,
-                currencies: ttnPersons?.map((el, index) => {
-                    return { ...el, index: index, label: el.last_name };
-                }),
-            },
-            { 
-                index: "4",
-                value: "",
-                label: "Товар к доставке принял",
-                select: true,
-                currencies: ttnPersons?.map((el, index) => {
-                    return { ...el, index: index, label: el.last_name };
-                }),
-                controlInput: ["Доверенность", "ФИО"],
-                controlValue: ttnPersons,
-            },
-            { index: "5", value: "", label: "Доверенность" },
-            { index: "6", value: "", label: "ФИО" },
-        ];
-        const first = [
-            { index: "0", value: docNumber || "", label: "Номер счета" },
-            { index: "1", value: "", label: "Дата начала счета", date: true },
-            { index: "2", header: "Номер договора и дата начала" },
-            {
-                index: "3",
-                label: "Номер договора",
-                select: dogovorNumbers?.length > 0,
-                value: "",
-                currencies: dogovorDictionary?.map((el, index) => {
-                    return { index: index, label: el.doc_number };
-                }),
-                controlInput: "Дата начала договора",
-                controlValue: dogovorDictionary,
-            },
-            { index: "4", value: "", label: "Дата начала договора", date: true, disabled: true, },
-        ];
-        const transport = [
-            {
-                index: "0",
-                value: "",
-                label: "Транспорт",
-                select: true,
-                autocomplete: true,
-                currencies: availableTransport?.map((el, index) => {
-                    return { index: index, label: `${el.car_model} ${el.car_number}` };
-                }),
-                controlInput: ["Марка и гос. номер", "ФИО водителя", "УНП перевозчика", "Пункт погрузки", "Пункт разгрузки", "Номер путевого листа", "Вес груза"],
-                controlValue: availableTransport,
-            },
-            { index: "1", value: "", label: "Марка и гос. номер" },
-            { index: "2", value: "", label: "ФИО водителя" },
-            { index: "3", value: "", label: "УНП перевозчика" },
-            { index: "4", value: "", label: "Пункт погрузки" },
-            { index: "5", value: "", label: "Пункт разгрузки" },
-            { index: "6", value: "", label: "Номер путевого листа" },
-            { index: "7", value: "", label: "Вес груза" },
-        ];
-        const product = [
-            {
-                index: "0",
-                value: "",
-                autocomplete: true,
-                select: true,
-                label: "Наименование товара",
-                currencies: commodityOptions?.map((el, index) => {
-                    return { index: index, label: el };
-                }),
-                controlInput: ["Цена за ед."],
-                controlValue: commodityDictionary,
-            },
-            { index: "1", value: "", label: "Единица измерения" },
-            { index: "2", value: "", label: "Количество" },
-            { index: "3", value: "", label: "Цена за ед." },
-            { index: "4", value: "", label: "Стоимость по количеству" },
-            { index: "5", value: "", label: "Ставка НДС, %" },
-            { index: "6", value: "", label: "Сумма НДС" },
-            { index: "7", value: "", label: "Стоимость с НДС" },
-        ];
-        const basis = unloadingBasis || [];
-        setUnloadingBasis(basis);
-        setCarField(transport);
-        setOne(first);
-        setTypesDelivery(deliv);
-        setTnField(fieldsEntity);
-        setEntity(product);
-    }, [ttn]);
+        const contrAgents_server = contrAgents.map((element) => {
+            const name = element.label;
+            switch (name) {
+                case "Отгрузку разрешил":
+                    return {
+                        ...element,
+                        currencies: response.ttnPersons?.map((el, index) => {
+                            return { ...el, index: index, label: el.last_name };
+                        }),
+                    };
+                case "Груз сдал":
+                    return {
+                        ...element,
+                        currencies: response.ttnPersons?.map((el, index) => {
+                            return { ...el, index: index, label: el.last_name };
+                        }),
+                    };
+                case "Товар к доставке принял":
+                    return {
+                        ...element,
+                        currencies: response.ttnPersons?.map((el, index) => {
+                            return { ...el, index: index, label: el.last_name };
+                        }),
+                        controlValue: response.ttnPersons,
+                    }
+                default:
+                    return element;
+            }
+        });
+        const dogovorDictionary_server = dogovorDictionary.map((element) => {
+            const name = element.label;
+            switch (name) {
+                case "Номер счета":
+                    return {
+                        ...element,
+                        value: response.docNumber || ""
+                    };
+                case "Номер договора":
+                    return {
+                        ...element,
+                        select: response.dogovorNumbers?.length > 0,
+                        currencies: response.dogovorDictionary?.map((el, index) => {
+                            return { index: index, label: el.doc_number };
+                        }),
+                        controlValue: response.dogovorDictionary,
+                    };
+                default:
+                    return element;
+            }
+        });
+        const availableTransport_server = availableTransport.map((element) => {
+            const name = element.label;
+            switch (name) {
+                case "Транспорт":
+                    return {
+                        ...element,
+                        currencies: response.availableTransport?.map((el, index) => {
+                            return { index: index, label: `${el.car_model} ${el.car_number}` };
+                        }),
+                        controlValue: response.availableTransport,
+                    };
+                default:
+                    return element;
+            }
+        });
+        const commodityDictionary_server = commodityDictionary.map((element) => {
+            const name = element.label;
+            switch (name) {
+                case "Наименование товара":
+                    return {
+                        ...element,
+                        currencies: response.commodityOptions?.map((el, index) => {
+                            return { index: index, label: el };
+                        }),
+                        controlValue: response.commodityDictionary,
+                    };
+                default:
+                    return element;
+            }
+        });
+        const unloadingBasis_server = response.unloadingBasis || [];
+        setUnloadingBasis(unloadingBasis_server);
+        setAvailableTransport(availableTransport_server);
+        setDogovorDictionary(dogovorDictionary_server);
+        setTypesDelivery(typesDelivery_server);
+        setContrAgents(contrAgents_server);
+        setCommodityDictionary(commodityDictionary_server);
+    }, [response]);
     const setContrAgent = () => {
-        const { contrAgents } = ttn;
-        const controlValue = one[3].value;
-        const items = three.map((item) => {
-            return {...item, value: controlValue !== "" ? contrAgents[controlValue][item.server] : "", disabled: true};
+        const controlValue = dogovorDictionary[3].value;
+        const organizationInformation_server = organizationInformation.map((item) => {
+            return {...item, value: controlValue !== "" ? response.contrAgents[controlValue][item.server] : "", disabled: true};
         });
-        const itemsTwo = threeTwo.map((item) => {
-            return {...item, value: controlValue !== "" ? contrAgents[controlValue][item.server] : "", disabled: true};
+        const personInformation_server = personInformation.map((item) => {
+            return {...item, value: controlValue !== "" ? response.contrAgents[controlValue][item.server] : "", disabled: true};
         });
-        const res = [{name: "Информация об организации", items}, {name: "Информация об уполномоченном лице", items: itemsTwo}];
-        setThreeTwo(itemsTwo);
-        setThree(items);
-        setActiveForm(res);
+        const res = [
+            {name: "Информация об организации", items: organizationInformation_server},
+            {name: "Информация об уполномоченном лице", items: personInformation_server},
+        ];
+        setPersonInformation(personInformation_server);
+        setOrganizationInformation(organizationInformation_server);
+        setActiveFormItems(res);
     };
     useEffect(() => {
         if (step === "1") {
-            setActiveForm(one);
+            setActiveFormItems(dogovorDictionary);
         }
         if (step === "2") {
             setContrAgent();
         }
         if (step === "3") {
-            setActiveForm(tnField);
+            setActiveFormItems(contrAgents);
         }
         if (step === "4") {
-            setActiveForm(carField);
+            setActiveFormItems(commodityDictionary);
         }
         if (step === "5") {
-            setActiveForm(entity);
+            setActiveFormItems(availableTransport);
         }
-    }, [step, one, tnField, carField]);
+    }, [step, dogovorDictionary, contrAgents, availableTransport, commodityDictionary]);
     useEffect(() => {
-        const res = [...one, ...three, ...threeTwo, ...tnField, ...carField];
+        const isAll_dogovorDictionary = dogovorDictionary.filter((el) => !el.value && el.require);
+        if (!isAll_dogovorDictionary.length) {
+            const dogovorDictionary_result = {
+                docNumber: dogovorDictionary.find((el) => el.fieldName === "docNumber").value,
+                check_start_date: dogovorDictionary.find((el) => el.fieldName === "check_start_date").value,
+                doc_number: dogovorDictionary.find((el) => el.fieldName === "doc_number").value,
+                doc_start_date: dogovorDictionary.find((el) => el.fieldName === "doc_start_date").value,
+            };
+        }
+        const res = [...dogovorDictionary, ...organizationInformation, ...personInformation, ...contrAgents, ...availableTransport];
         setServerResult(res);
         const x = res.filter((el) => el.value === "");
         if (x.length <= 5) {
@@ -348,7 +368,10 @@ function MainScreen() {
         } else {
             setIsShowSample(false)
         }
-    }, [one, three, threeTwo, tnField, carField, entity]);
+        // organization_types_server тип организации (ИП, ООО)
+        // typesDelivery_server вид оплаты (пред, пост и т.д.)
+        // unloadingBasis вид энтити (договор или счет) массив
+    }, [dogovorDictionary, organizationInformation, personInformation, contrAgents, availableTransport, commodityDictionary]);
     const changeType = (value) => {
         const changeUnloadingBasis = unloadingBasis.map((el) => {
             return el.value == value ? { ...el, checked: true } : el;
@@ -368,20 +391,49 @@ function MainScreen() {
     const clickSample = async () => {
         await fillTemplate(serverResult);
     };
+    const changeDate = (label, value) => {
+        switch (label) {
+            case "Дата начала счета":
+                const resDog = dogovorDictionary.map((el) => {
+                    if (el.label === label) {
+                        return {
+                            ...el,
+                            value
+                        };
+                    }
+                    return el;
+                });
+                setDogovorDictionary(resDog);
+                break;
+            case "Дата отгрузки":
+                const resDict = contrAgents.map((el) => {
+                    if (el.label === label) {
+                        return {
+                            ...el,
+                            value
+                        };
+                    }
+                    return el;
+                });
+                setContrAgents(resDict);
+                break;
+            default:
+                return;
+        }
+    };
 
     return (
         <div id="main-screen">
-            {organization_types.length && <Form label="Выберите вид контрагента" items={organization_types} value={isTypes} change={changeOrganizationTypes} />}
-            {isTypes
+            {organization_types.length && <Form label="Выберите вид контрагента" items={organization_types} value={organization_types_server} change={changeOrganizationTypes} />}
+            {organization_types_server
                 &&
                 <ActCard
                     unloadingBasis={unloadingBasis}
-                    delivery={delivery}
-                    changeDelivery={(deliv) => setDelivery(deliv)}
-                    changePos={(pos) => setPos(pos)}
+                    delivery={typesDelivery_server}
+                    changeDelivery={(deliv) => setDelivery_server(deliv)}
                     changeType={changeType}
                     changeStep={(step) => setStep(step)}
-                    items={activeForm}
+                    items={activeFormItems}
                     updatedItems={updatedItems}
                     typesDelivery={typesDelivery}
                     addCar={addCar}
@@ -391,6 +443,7 @@ function MainScreen() {
                     resSteps={resSteps}
                     isShowSample={isShowSample}
                     clickSample={clickSample}
+                    changeDate={changeDate}
                 />}
         </div>
     );

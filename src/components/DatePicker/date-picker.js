@@ -11,7 +11,7 @@ function DatePickerControl(props) {
     const change = (value) => {
         const date = moment(value.$d).format('YYYY-MM-DD');
         setDate(date);
-        props.change(date);
+        props.change(props.item.label, date);
     };
     useEffect(() => {
         setDate(defaultDate);

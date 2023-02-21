@@ -55,9 +55,12 @@ function ActCard(props) {
     const addProduct = (item, value) => {
         props.addProduct(item, value);
     };
+    const changeDate = (label, value) => {
+        props.changeDate(label, value);
+    };
     const listItems = step !== "2" && props.items.map((item) =>
         !item.header
-            ? <TextFieldControl item={item} key={item.index} change={change} addCar={addCar} addProduct={addProduct} />
+            ? <TextFieldControl item={item} key={item.index} change={change} addCar={addCar} addProduct={addProduct} changeDate={changeDate} />
             : <div key={item.index} className="header">{item.header}</div>
     );
 
@@ -65,7 +68,7 @@ function ActCard(props) {
         <div id="card">
             {step === "1" && <Form label="Выберите вид счета" value={type} items={props.unloadingBasis} change={changeType} />}
             <div className="form">
-                {position.length > 0 && step === "5" && <Form label="Позиция" value={position} items={pos} change={changePosition} />}
+                {position.length > 0 && step === "4" && <Form label="Позиция" value={position} items={pos} change={changePosition} />}
                 {step === "3" && <Form label="Тип накладной" value={entityType} items={props.tnOrTtn} change={(val) => props.changeTnOrTtn(val)} />}
                 {listItems}
                 {step === "2" && Array.isArray(props.items[0].items) && <AccordionControl items={props.items} />}

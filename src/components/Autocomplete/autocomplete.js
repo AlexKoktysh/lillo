@@ -3,23 +3,44 @@ import Autocomplete from '@mui/material/Autocomplete';
 import { useEffect, useState } from 'react';
 
 function AutocompleteField(props) {
-    const [label, setLabel] = useState("")
+    const [label, setLabel] = useState("");
     const save = (event) => {
-        props.saveCar(event.target.value)
+        const val = props.item.label === "Транспорт" ? event.target.value : event.currentTarget.innerText;
+        props.saveCar(val)
+    };
+    const newCar = (event) => {
+        if (props.item.label === "Транспорт") {
+            props.saveCar(event.target.value)
+        };
     };
     useEffect(() => {
-        const label = props.value ? props.currencies.find((item) => item.index === props.value) : "";
-        const x = label && label.label;
-        x && setLabel(x);
-    });
+        switch (props.item.label) {
+            case "Транспорт":
+                const car = props.item.value !== "" ? props.item.currencies.find((item) => item.index === props.item.value) : "";
+                car !== "" && setLabel(car);
+                break;
+            case "Наименование товара":
+                const obj = Object.values(props.item.controlValue);
+                const product = props.item.value !== "" ? obj.find((el) => el.id === props.item.value) : "";
+                const res = {index: product.id || "", label: product?.product_name || ""};
+                product !== "" && setLabel(res);
+                break;
+            default:
+                break;
+        }
+    }, [props.item]);
+    
     return (
         <Autocomplete
             id="free-solo-demo"
             size="small"
             freeSolo
-            onBlur={save}
-            options={props.currencies.map((option) => option.label)}
-            renderInput={(params) => <TextField {...params} label={props.label} />}
+            value={label}
+            onChange={save}
+            options={props.item.currencies.map((option) => option)}
+            renderInput={(params) => {
+                return <TextField {...params} label={props.item.label} onChange={newCar} />
+            }}
         />
     );
 }
