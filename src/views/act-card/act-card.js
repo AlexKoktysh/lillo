@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import Form from "../../components/FormControl/form-control.js";
-// import { steps } from "../../constants/index.js";
 import "./act-card.scss";
 import TextFieldControl from "../../components/TextfieldControl/text-field-control.js";
 import AccordionControl from "../../components/Accordion/accordion-control.js";
@@ -36,10 +35,6 @@ function ActCard(props) {
     const changeDelivery = (value) => {
         setDelivery(value);
     };
-    const changeEntityType = () => {};
-    // useEffect(() => {
-    //     type && props.changeType(type);
-    // });
     useEffect(() => {
         delivery && props.changeDelivery(delivery);
     });
@@ -73,6 +68,12 @@ function ActCard(props) {
                 {listItems}
                 {step === "2" && Array.isArray(props.items[0].items) && <AccordionControl items={props.items} />}
                 {step === "1" && props.typesDelivery && <Box sx={{ mb: 2 }}><Form label="Выберите вид поставки" value={delivery} items={props.typesDelivery} change={changeDelivery} /></Box>}
+                {step === "4"
+                    &&
+                    <Box sx={{ mb: 4, mt: 4 }}>
+                        <Button onClick={props.addCommodityDictionary} disabled={!props.isShowAddCommodityDictionary} color="secondary" variant="contained">Добавить</Button>
+                    </Box>
+                }
                 <Form label="Заполняемая секция" value={step} items={props.resSteps} change={changeStep} />
                 <Box sx={{ mb: 4, mt: 4 }}>
                     <Button onClick={props.clickSample} disabled={!props.isShowSample} color="secondary" variant="contained">Заполнить шаблон</Button>

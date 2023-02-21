@@ -27,3 +27,13 @@ export const fillTemplate = async (value) => {
     const response = await instance.post("fill_template", value);
     return response.data;
 };
+
+export const sendTemplate = async (params) => {
+    const json = {...params};
+    console.log("json", json);
+};
+
+export const sendCommodityDictionary = async (params) => {
+    const json = {...params};
+    console.log("json", json);
+};

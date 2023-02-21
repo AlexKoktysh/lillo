@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Form from "../../components/FormControl/form-control.js";
 import ActCard from "../act-card/act-card.js";
-import { getOrganizationTypes, getDataForCreateTtn, fillTemplate } from "../../api/api";
+import { getOrganizationTypes, getDataForCreateTtn, sendTemplate, sendCommodityDictionary } from "../../api/api";
 import {
     dogovorDictionary_default,
     organizationInformation_default,
@@ -35,6 +35,8 @@ function MainScreen() {
     const [tnOrTtn, setTnOrTtn] = useState(tnOrTtnField);
     const [resSteps, setResSteps] = useState(steps);
     const [isShowSample, setIsShowSample] = useState(false);
+    const [isShowAddCommodityDictionary, setIsShowAddCommodityDictionary] = useState(false);
+    const [commodityDictionary_result, setCommodityDictionary_result] = useState([]);
     useEffect(() => {
         const fetch = async () => {
             const response = await getOrganizationTypes();
@@ -136,6 +138,18 @@ function MainScreen() {
             case "Единица измерения":
                 const measure = obj.find((el) => el.id === parenValue).measure;
                 return measure ? `${measure}` : "";
+            case "Примечания (необязательное)":
+                const notes = obj.find((el) => el.id === parenValue).notes;
+                return notes ? `${notes}` : "";
+            case "Страна ввоза (необязательное)":
+                const country = obj.find((el) => el.id === parenValue).country_import;
+                return country ? `${country}` : "";
+            case "Масса (необязательное)":
+                const weight = obj.find((el) => el.id === parenValue).product_weight;
+                return weight ? `${weight}` : "";
+            case "Количество грузовых мест (необязательное)":
+                const cargo = obj.find((el) => el.id === parenValue).qty_cargo_place;
+                return cargo ? `${cargo}` : "";
             default:
                 return;
         }
@@ -204,25 +218,69 @@ function MainScreen() {
     useMemo(() => expensiveCalculation(contrAgents, changeContrAgents, setContrAgents, 4), [contrAgents[4].value]);
     useMemo(() => expensiveCalculation(commodityDictionary, changeCommodityDictionary, setCommodityDictionary, 0), [commodityDictionary[0].value]);
 
+    useMemo(() => {
+        if (commodityDictionary[4].value && commodityDictionary[6].value) {
+            const sum = commodityDictionary[4].value + commodityDictionary[6].value;
+            const resObj = commodityDictionary.map((element) => {
+                if (element.label === "Стоимость с НДС") {
+                    return {
+                        ...element,
+                        value: sum,
+                    };
+                }
+                return element;
+            });
+            setCommodityDictionary(resObj);
+        }
+    }, [commodityDictionary[4].value, commodityDictionary[6].value]);
+    useMemo(() => {
+        if (commodityDictionary[4].value && commodityDictionary[5].value) {
+            const sum = commodityDictionary[4].value * (commodityDictionary[5].value / 100);
+            const resObj = commodityDictionary.map((element) => {
+                if (element.label === "Сумма НДС") {
+                    return {
+                        ...element,
+                        value: sum,
+                    };
+                }
+                return element;
+            });
+            setCommodityDictionary(resObj);
+        }
+    }, [commodityDictionary[4].value, commodityDictionary[5].value]);
+    useMemo(() => {
+        if (commodityDictionary[2].value && commodityDictionary[3].value) {
+            const sum = commodityDictionary[2].value * commodityDictionary[3].value;
+            const resObj = commodityDictionary.map((element) => {
+                if (element.label === "Стоимость по количеству") {
+                    return {
+                        ...element,
+                        value: sum,
+                    };
+                }
+                return element;
+            });
+            setCommodityDictionary(resObj);
+        }
+    }, [commodityDictionary[2].value, commodityDictionary[3].value]);
+
     const changeOrganizationTypes = async (value) => {
         setOrganizationTypesServer(value);
         const response = await getDataForCreateTtn();
         setResponse(response);
     };
     useEffect(() => {
-        const x = response.length && response.commodityDictionary.filter((el) => el.value === "");
-        if (!x?.length) {
-            const res = commodityDictionary.map((el) => {
-                return {  fieldName: el.fieldName, value: el.value }
+        const isAll_commodityDictionary = commodityDictionary.filter((el) => !el.value && el.require);
+        if (!isAll_commodityDictionary?.length) {
+            const res = commodityDictionary.map((element) => {
+                if (element.fieldName === "product_name") {
+                    const field_name = Object.values(element.controlValue)?.find((el) => el.id === element.value)?.product_name;
+                    return { fieldName: element.fieldName, value: field_name };
+                }
+                return { fieldName: element.fieldName, value: element.value };
             });
-            res.push({ fieldName: "product_qty", value: "1"});
-            res.push({ fieldName: "ttnProductQty", value: "1"});
-            res.push({ fieldName: "fk_organisation", value: ""});
-            res.push({ fieldName: "fk_user", value: ""});
-            res.push({ fieldName: "notes", value: ""});
-            res.push({ fieldName: "country_import", value: ""});
-            res.push({ fieldName: "qty_cargo_place", value: ""});
-            res.push({ fieldName: "product_weight", value: ""});
+            setIsShowAddCommodityDictionary(true);
+            setCommodityDictionary_result(res);
         }
     }, [commodityDictionary]);
     useEffect(() => {
@@ -351,23 +409,53 @@ function MainScreen() {
         }
     }, [step, dogovorDictionary, contrAgents, availableTransport, commodityDictionary]);
     useEffect(() => {
-        const isAll_dogovorDictionary = dogovorDictionary.filter((el) => !el.value && el.require);
-        if (!isAll_dogovorDictionary.length) {
-            const dogovorDictionary_result = {
-                docNumber: dogovorDictionary.find((el) => el.fieldName === "docNumber").value,
-                check_start_date: dogovorDictionary.find((el) => el.fieldName === "check_start_date").value,
-                doc_number: dogovorDictionary.find((el) => el.fieldName === "doc_number").value,
-                doc_start_date: dogovorDictionary.find((el) => el.fieldName === "doc_start_date").value,
-            };
-        }
-        const res = [...dogovorDictionary, ...organizationInformation, ...personInformation, ...contrAgents, ...availableTransport];
-        setServerResult(res);
-        const x = res.filter((el) => el.value === "");
-        if (x.length <= 5) {
-            setIsShowSample(true);
-        } else {
-            setIsShowSample(false)
-        }
+        const isAll_dogovorDictionary = dogovorDictionary.filter((el) => el.value === "" && el.require);
+        const isAll_organizationInformation = organizationInformation.filter((el) => el.value === "" && el.require);
+        const isAll_personInformation = personInformation.filter((el) => el.value === "" && el.require);
+        const isAll_contrAgents = contrAgents.filter((el) => el.value === "" && el.require);
+        const isAll_availableTransport = availableTransport.filter((el) => el.value === "" && el.require);
+        if (
+            !isAll_dogovorDictionary.length &&
+            !isAll_organizationInformation.length &&
+            !isAll_personInformation.length &&
+            !isAll_contrAgents.length &&
+            !isAll_availableTransport.length
+            ) {
+                const dogovorDictionary_result = dogovorDictionary.filter((el) => !el.header).map((element) => {
+                    if (element.fieldName === "doc_number") {
+                        const field_name = element.currencies[element.value]?.label;
+                        return { fieldName: element.fieldName, value: field_name };
+                    }
+                    return {fieldName: element.fieldName, value: element.value}
+                });
+                const organizationInformation_result = organizationInformation.map((element) => {
+                    return {fieldName: element.fieldName, value: element.value}
+                });
+                const personInformation_result = personInformation.map((element) => {
+                    return {fieldName: element.fieldName, value: element.value}
+                });
+                const contrAgents_result = contrAgents.map((element) => {
+                    return {fieldName: element.fieldName, value: element.value}
+                });
+                const availableTransport_result = availableTransport.map((element) => {
+                    if (element.fieldName === "car_model") {
+                        const field_name = element.currencies[element.value]?.label;
+                        return { fieldName: element.fieldName, value: field_name };
+                    }
+                    return {fieldName: element.fieldName, value: element.value}
+                });
+                const res = [
+                    ...dogovorDictionary_result,
+                    ...organizationInformation_result,
+                    ...personInformation_result,
+                    ...contrAgents_result,
+                    ...availableTransport_result,
+                ];
+                setServerResult(res);
+                setIsShowSample(true);
+            } else {
+                setIsShowSample(false);
+            }
         // organization_types_server тип организации (ИП, ООО)
         // typesDelivery_server вид оплаты (пред, пост и т.д.)
         // unloadingBasis вид энтити (договор или счет) массив
@@ -389,7 +477,7 @@ function MainScreen() {
         setTnOrTtn(changeItem);
     };
     const clickSample = async () => {
-        await fillTemplate(serverResult);
+        await sendTemplate(serverResult);
     };
     const changeDate = (label, value) => {
         switch (label) {
@@ -421,6 +509,9 @@ function MainScreen() {
                 return;
         }
     };
+    const addCommodityDictionary = () => {
+        sendCommodityDictionary(commodityDictionary_result);
+    };
 
     return (
         <div id="main-screen">
@@ -444,6 +535,8 @@ function MainScreen() {
                     isShowSample={isShowSample}
                     clickSample={clickSample}
                     changeDate={changeDate}
+                    isShowAddCommodityDictionary={isShowAddCommodityDictionary}
+                    addCommodityDictionary={addCommodityDictionary}
                 />}
         </div>
     );
