@@ -279,6 +279,9 @@ function MainScreen() {
                 }
                 return { fieldName: element.fieldName, value: element.value };
             });
+            const item = Object.values(response.commodityDictionary)?.find((el) => el.id === commodityDictionary[0].value)?.ttnProductQty;
+            res.push({fieldName: "ttn_max_qty", value: item});
+            res.push({fieldName: "ttn_commodity_position", value: "2"});
             setIsShowAddCommodityDictionary(true);
             setCommodityDictionary_result(res);
         }

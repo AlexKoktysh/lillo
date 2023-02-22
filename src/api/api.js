@@ -35,5 +35,5 @@ export const sendTemplate = async (params) => {
 
 export const sendCommodityDictionary = async (params) => {
     const json = {...params};
-    console.log("json", json);
+    await instance.post("add_position", json);
 };
