@@ -35,5 +35,16 @@ export const sendTemplate = async (params) => {
 
 export const sendCommodityDictionary = async (params) => {
     const json = {...params};
-    await instance.post("add_position", json);
+    const response = await instance.post("add_position", json);
+    return response.status === 200;
+};
+
+export const showSection = async (section) => {
+    const response = await instance.post("show_section", { "position": section });
+    return response;
+};
+
+export const deleteSection = async (section) => {
+    const response = await instance.post("remove_position", { "position": section });
+    return response.status === 200;
 };

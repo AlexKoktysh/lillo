@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Form from "../../components/FormControl/form-control.js";
 import ActCard from "../act-card/act-card.js";
-import { getOrganizationTypes, getDataForCreateTtn, sendTemplate, sendCommodityDictionary } from "../../api/api";
+import { getOrganizationTypes, getDataForCreateTtn, sendTemplate, sendCommodityDictionary, showSection, deleteSection } from "../../api/api";
 import {
     dogovorDictionary_default,
     organizationInformation_default,
@@ -37,6 +37,8 @@ function MainScreen() {
     const [isShowSample, setIsShowSample] = useState(false);
     const [isShowAddCommodityDictionary, setIsShowAddCommodityDictionary] = useState(false);
     const [commodityDictionary_result, setCommodityDictionary_result] = useState([]);
+    const [productPosition, setProductPosition] = useState([{ index: 0, value: 1, label: 1 }]);
+    const [productPosition_active, setProductPosition_active] = useState(1);
     useEffect(() => {
         const fetch = async () => {
             const response = await getOrganizationTypes();
@@ -46,6 +48,26 @@ function MainScreen() {
         };
         fetch();
     }, []);
+    useEffect(() => {
+        const fetch = async () => {
+            const response = await showSection(productPosition_active);
+            const resArray = [...productPosition];
+            if (response?.data?.sectionCount > 1) {
+                for (let i = 1; i < response.sectionCount; i++) {
+                    resArray.push({ index: i, value: i + 1, label: i + 1 })
+                }
+                setProductPosition(resArray);
+            }
+            if (response.status === 200) {
+                const newCommodityDictionary = commodityDictionary.map((element) => {
+                    const value = response.data.columns[element.fieldName];
+                    return {...element, value: value ? value : ""};
+                });
+                setCommodityDictionary(newCommodityDictionary);
+            }
+        };
+        fetch();
+    }, [productPosition_active]);
     useEffect(() => {
         const item = tnOrTtn.find((el) => el.checked)?.label;
         if (item === "ТТН") {
@@ -98,7 +120,7 @@ function MainScreen() {
         if (x) {
             const res = commodityDictionary.map((el) => {
                 if (el.label === item.label) {
-                    return {...el, value: x.id};
+                    return {...el, value: x.product_name};
                 } else {
                     return el;
                 }
@@ -130,25 +152,29 @@ function MainScreen() {
         setAvailableTransport(res);
     };
     const changeCommodityDictionary = (label, parenValue) => {
+        if (!response?.commodityDictionary) {
+            return;
+        }
         const obj = Object.values(response.commodityDictionary);
         switch (label) {
             case "Цена за ед.":
-                const price = obj.find((el) => el.id === parenValue).product_price.BYN;
+                const price = obj.find((el) => el.product_name === parenValue).product_price.BYN;
                 return price ? `${price}` : "";
             case "Единица измерения":
-                const measure = obj.find((el) => el.id === parenValue).measure;
+                const measure = obj.find((el) => el.product_name === parenValue).measure;
                 return measure ? `${measure}` : "";
             case "Примечания (необязательное)":
-                const notes = obj.find((el) => el.id === parenValue).notes;
+                const notes = obj.find((el) => el.product_name === parenValue)?.notes;
+                debugger;
                 return notes ? `${notes}` : "";
             case "Страна ввоза (необязательное)":
-                const country = obj.find((el) => el.id === parenValue).country_import;
+                const country = obj.find((el) => el.product_name === parenValue)?.country_import;
                 return country ? `${country}` : "";
             case "Масса (необязательное)":
-                const weight = obj.find((el) => el.id === parenValue).product_weight;
+                const weight = obj.find((el) => el.product_name === parenValue)?.product_weight;
                 return weight ? `${weight}` : "";
             case "Количество грузовых мест (необязательное)":
-                const cargo = obj.find((el) => el.id === parenValue).qty_cargo_place;
+                const cargo = obj.find((el) => el.product_name === parenValue)?.qty_cargo_place;
                 return cargo ? `${cargo}` : "";
             default:
                 return;
@@ -270,22 +296,25 @@ function MainScreen() {
         setResponse(response);
     };
     useEffect(() => {
+        if (!response?.commodityDictionary && step !== "4") {
+            return;
+        }
         const isAll_commodityDictionary = commodityDictionary.filter((el) => !el.value && el.require);
         if (!isAll_commodityDictionary?.length) {
             const res = commodityDictionary.map((element) => {
                 if (element.fieldName === "product_name") {
-                    const field_name = Object.values(element.controlValue)?.find((el) => el.id === element.value)?.product_name;
+                    const field_name = Object.values(element.controlValue)?.find((el) => el.product_name === element.value)?.product_name;
                     return { fieldName: element.fieldName, value: field_name };
                 }
                 return { fieldName: element.fieldName, value: element.value };
             });
-            const item = Object.values(response.commodityDictionary)?.find((el) => el.id === commodityDictionary[0].value)?.ttnProductQty;
+            const item = Object.values(response.commodityDictionary)?.find((el) => el.product_name === commodityDictionary[0].value)?.ttnProductQty;
             res.push({fieldName: "ttn_max_qty", value: item});
-            res.push({fieldName: "ttn_commodity_position", value: "2"});
+            res.push({fieldName: "ttn_commodity_position", value: productPosition_active});
             setIsShowAddCommodityDictionary(true);
             setCommodityDictionary_result(res);
         }
-    }, [commodityDictionary]);
+    }, [commodityDictionary, step]);
     useEffect(() => {
         const typesDelivery_server = response.deliveryConditions?.map((el, index) => {
             return { index: index, label: el.label, value: index + 1 };
@@ -512,8 +541,21 @@ function MainScreen() {
                 return;
         }
     };
-    const addCommodityDictionary = () => {
-        sendCommodityDictionary(commodityDictionary_result);
+    const addCommodityDictionary = async () => {
+        const res = await sendCommodityDictionary(commodityDictionary_result);
+        if (res) {
+            const newProductPosition = [
+                ...productPosition,
+                { index: productPosition_active, value: productPosition_active + 1, label: productPosition_active + 1 },
+            ]
+            setProductPosition(newProductPosition);
+            setProductPosition_active(productPosition_active + 1);
+            await showSection(1);
+        }
+    };
+    const deleteCommodityDictionary = async () => {
+        const res = await deleteSection(productPosition_active);
+        debugger;
     };
 
     return (
@@ -540,6 +582,10 @@ function MainScreen() {
                     changeDate={changeDate}
                     isShowAddCommodityDictionary={isShowAddCommodityDictionary}
                     addCommodityDictionary={addCommodityDictionary}
+                    productPosition={productPosition}
+                    productPosition_active={productPosition_active}
+                    changeProductPosition_active={(value) => setProductPosition_active(value)}
+                    deleteCommodityDictionary={deleteCommodityDictionary}
                 />}
         </div>
     );

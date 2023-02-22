@@ -10,17 +10,16 @@ function ActCard(props) {
     const [step, setStep] = useState("1");
     const [type, setType] = useState("");
     const [delivery, setDelivery] = useState(props.delivery);
-    const [position, setPosition] = useState("1");
+    const [localPosition, setLocalPosition] = useState(props.productPosition_active);
 
-    const pos = [
-        { index: "0", value: "1", label: "1" },
-        { index: "1", value: "2", label: "2" },
-    ];
     const [entityType, setEntityType] = useState(props.tnOrTtn.find((el) => el.checked)?.value);
     useEffect(() => {
         const x = props.tnOrTtn.find((el) => el.checked)?.value;
         setEntityType(x);
     }, props.tnOrTtn);
+    useEffect(() => {
+        setLocalPosition(props.productPosition_active);
+    }, [props.productPosition_active]);
 
     const changeStep = (value) => {
         setStep(value);
@@ -30,7 +29,7 @@ function ActCard(props) {
         value && props.changeType(value);
     };
     const changePosition = (value) => {
-        setPosition(value);
+        props.changeProductPosition_active(Number(value));
     };
     const changeDelivery = (value) => {
         setDelivery(value);
@@ -63,15 +62,16 @@ function ActCard(props) {
         <div id="card">
             {step === "1" && <Form label="Выберите вид счета" value={type} items={props.unloadingBasis} change={changeType} />}
             <div className="form">
-                {position.length > 0 && step === "4" && <Form label="Позиция" value={position} items={pos} change={changePosition} />}
+                {step === "4" && <Form label="Позиция" value={localPosition} items={props.productPosition} change={changePosition} />}
                 {step === "3" && <Form label="Тип накладной" value={entityType} items={props.tnOrTtn} change={(val) => props.changeTnOrTtn(val)} />}
                 {listItems}
                 {step === "2" && Array.isArray(props.items[0].items) && <AccordionControl items={props.items} />}
                 {step === "1" && props.typesDelivery && <Box sx={{ mb: 2 }}><Form label="Выберите вид поставки" value={delivery} items={props.typesDelivery} change={changeDelivery} /></Box>}
                 {step === "4"
                     &&
-                    <Box sx={{ mb: 4, mt: 4 }}>
+                    <Box sx={{ mb: 4, mt: 4, display: 'flex', justifyContent: 'space-between' }}>
                         <Button onClick={props.addCommodityDictionary} disabled={!props.isShowAddCommodityDictionary} color="secondary" variant="contained">Добавить</Button>
+                        <Button onClick={props.deleteCommodityDictionary} disabled={!props.isShowAddCommodityDictionary} color="secondary" variant="contained">Удалить</Button>
                     </Box>
                 }
                 <Form label="Заполняемая секция" value={step} items={props.resSteps} change={changeStep} />

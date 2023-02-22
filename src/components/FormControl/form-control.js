@@ -14,6 +14,9 @@ function Form(props) {
     useEffect(() => {
         value && props.change(value);
     }, [value]);
+    useEffect(() => {
+        setValue(props.value);
+    }, [props.value]);
 
     return (
         <FormControl className="container">
