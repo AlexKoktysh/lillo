@@ -26,9 +26,11 @@ import { setResponseMapper } from "../../use/setResponse.js";
 import { changeDate_custom } from "../../use/changeDate.js";
 import {
     changeAvailableTransport_result_custom,
+    changeCommodity,
     changeContrAgentsResult_custom,
     changeDogovorDictionary_result_custom,
-    changeMapper
+    changeMapper,
+    changeTransport
 } from "../../use/change_result_custom.js";
 
 function MainScreen() {
@@ -114,14 +116,14 @@ function MainScreen() {
         }
     };
     const updatedItems = (changeItem, value) => {
-        const field = changeItem?.controlInput ? changeItem.controlInput : changeItem.label;
+        const field = changeItem?.controlInput ? changeItem.controlInput : changeItem.fieldName;
         const { setFunction, items, funcDate } = checkStep(changeItem, value);
         const val = !Array.isArray(changeItem.controlInput) && changeItem.controlValue ? funcDate : value;
         setFunction(items?.map((item) => {
-            if (item.label === field) {
+            if (item.fieldName === field) {
                 return { ...item, value: val };
             } else {
-                if (item.label === changeItem.label) {
+                if (item.fieldName === changeItem.fieldName) {
                     return { ...item, value}
                 } else {
                     return item;
@@ -134,7 +136,7 @@ function MainScreen() {
         const product = server_product?.find((el) => el.product_name === value);
         if (product) {
             const res = commodityDictionary?.map((el) => {
-                if (el.label === item.label) {
+                if (el.fieldName === item.fieldName) {
                     return {...el, value: product.product_name};
                 } else {
                     return el;
@@ -147,7 +149,7 @@ function MainScreen() {
         const car = item.currencies.find((el) => el.index === value);
         if (car) {
             const res = availableTransport?.map((el) => {
-                if (el.label === item.label) {
+                if (el.fieldName === item.fieldName) {
                     return {...el, value: car.index};
                 } else {
                     return el;
@@ -158,7 +160,7 @@ function MainScreen() {
         const ind = item.currencies.length;
         const pushItem = {index: ind, label: value};
         const res = availableTransport?.map((el) => {
-            if (el.label === item.label) {
+            if (el.fieldName === item.fieldName) {
                 return {...el, value: ind, currencies: [...el.currencies, pushItem]};
             } else {
                 return el;
@@ -166,42 +168,20 @@ function MainScreen() {
         });
         setAvailableTransport(res);
     };
-    const changeCommodityDictionary = (label, parenValue) => {
+    const changeCommodityDictionary = (fieldName, parenValue) => {
         if (!response?.commodityDictionary) {
             return;
         }
-        const obj = Object.values(response.commodityDictionary);
-        switch (label) {
-            case "Цена за ед.":
-                const price = obj.find((el) => el.product_name === parenValue).product_price.BYN;
-                return price ? `${price}` : "";
-            case "Единица измерения":
-                const measure = obj.find((el) => el.product_name === parenValue).measure;
-                return measure ? `${measure}` : "";
-            case "Примечания (необязательное)":
-                const notes = obj.find((el) => el.product_name === parenValue)?.notes;
-                return notes ? `${notes}` : "";
-            case "Страна ввоза (необязательное)":
-                const country = obj.find((el) => el.product_name === parenValue)?.country_import;
-                return country ? `${country}` : "";
-            case "Масса (необязательное)":
-                const weight = obj.find((el) => el.product_name === parenValue)?.product_weight;
-                return weight ? `${weight}` : "";
-            case "Количество грузовых мест (необязательное)":
-                const cargo = obj.find((el) => el.product_name === parenValue)?.qty_cargo_place;
-                return cargo ? `${cargo}` : "";
-            default:
-                return;
-        }
+        return changeCommodity(response, fieldName, parenValue);
     };
-    const changeContrAgents = (label, parenValue) => {
-        switch (label) {
-            case "Доверенность":
+    const changeContrAgents = (fieldName, parenValue) => {
+        switch (fieldName) {
+            case "rights_number":
                 const number = response.ttnPersons[parenValue]?.rights_number;
                 const date = response.ttnPersons[parenValue]?.rights_date;
                 const showTextDate = `от ${date}`
                 return number || date ? `${number} ${showTextDate}` : "";
-            case "ФИО":
+            case "FIO":
                 const last_name = response.ttnPersons[parenValue]?.last_name;
                 const name = response.ttnPersons[parenValue]?.name;
                 const second_name = response.ttnPersons[parenValue]?.second_name;
@@ -210,40 +190,21 @@ function MainScreen() {
                 return "";
         }
     };
-    const changeAvailableTransport = (label, parenValue) => {
-        switch (label) {
-            case "Марка и гос. номер":
-                const model = response.availableTransport[parenValue]?.car_model;
-                const number = response.availableTransport[parenValue]?.car_number;
-                return model || number ? `${model} ${number}` : "";
-            case "ФИО водителя":
-                const last_name = response.availableTransport[parenValue]?.last_name;
-                const name = response.availableTransport[parenValue]?.name;
-                const second_name = response.availableTransport[parenValue]?.second_name;
-                return last_name || name || second_name ? `${last_name} ${name} ${second_name}` : "";
-            case "УНП перевозчика":
-                return `${response.availableTransport[parenValue]?.driver_unp || ""}`;
-            case "Пункт погрузки":
-                return `${response.availableTransport[parenValue]?.loading_point_address || ""}`;
-            case "Пункт разгрузки":
-                return `${response.availableTransport[parenValue]?.unloading_point_address || ""}`;
-            case "Номер путевого листа":
-                return `${response.availableTransport[parenValue]?.waybill_number || ""}`;
-            case "Вес груза":
-                return `${response.availableTransport[parenValue]?.cargo || ""}`;
-            default:
-                return "";
+    const changeAvailableTransport = (fieldName, parenValue) => {
+        if (!response?.availableTransport) {
+            return;
         }
+        return changeTransport(response, fieldName, parenValue);
     };
     const expensiveCalculation = (items, changeFunction, setFunction, val) => {
         const controlsInput = items[val].controlInput;
-        const parent = items.find((el) => el.select);
+        const parent = items.find((el) => el.select && (el.fieldName !== "allowed_person_id" && el.fieldName !== "handed_person_id"));
         if (parent.value !== "") {
-            const controlItems = items.filter((el) => controlsInput.find((element) => el.label === element));
+            const controlItems = items.filter((el) => controlsInput.find((element) => el.fieldName === element));
             const changeItems = controlItems?.map((el) => {
                 return {
                     ...el,
-                    value: changeFunction(el.label, parent.value),
+                    value: changeFunction(el.fieldName, parent.value),
                 };
             });
             const resultObj = items?.map((el) => {
@@ -262,7 +223,7 @@ function MainScreen() {
         if (commodityDictionary[4].value && commodityDictionary[6].value) {
             const sum = commodityDictionary[4].value + commodityDictionary[6].value;
             const resObj = commodityDictionary?.map((element) => {
-                if (element.label === "Стоимость с НДС") {
+                if (element.fieldName === "product_cost_with_vat") {
                     return {
                         ...element,
                         value: sum,
@@ -277,7 +238,7 @@ function MainScreen() {
         if (commodityDictionary[4].value && commodityDictionary[5].value) {
             const sum = commodityDictionary[4].value * (commodityDictionary[5].value / 100);
             const resObj = commodityDictionary?.map((element) => {
-                if (element.label === "Сумма НДС") {
+                if (element.fieldName === "ttn_product_vat_sum") {
                     return {
                         ...element,
                         value: sum,
@@ -292,7 +253,7 @@ function MainScreen() {
         if (commodityDictionary[2].value && commodityDictionary[3].value) {
             const sum = commodityDictionary[2].value * commodityDictionary[3].value;
             const resObj = commodityDictionary?.map((element) => {
-                if (element.label === "Стоимость по количеству") {
+                if (element.fieldName === "product_cost") {
                     return {
                         ...element,
                         value: sum,
@@ -338,7 +299,7 @@ function MainScreen() {
         const contrAgents_server = setResponseMapper(contrAgents, response?.ttnPersons);
         const dogovorDictionary_server = setResponseMapper(dogovorDictionary, response);
         const availableTransport_server = setResponseMapper(availableTransport, response?.availableTransport);
-        const commodityDictionary_server = setResponseMapper(commodityDictionary, response?.commodityOptions, response?.commodityDictionary);
+        const commodityDictionary_server = setResponseMapper(commodityDictionary, response, response?.commodityDictionary);
         const unloadingBasis_server = response.unloadingBasis || [];
         setUnloadingBasis(unloadingBasis_server);
         setAvailableTransport(availableTransport_server);
@@ -485,7 +446,11 @@ function MainScreen() {
     };
     const deleteCommodityDictionary = async () => {
         const res = await deleteSection(productPosition_active);
-        debugger;
+        if (res) {
+            setProductPosition_active(productPosition_active - 1);
+            await showSection(productPosition_active - 1);
+            debugger;
+        }
     };
 
     return (

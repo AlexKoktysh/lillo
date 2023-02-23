@@ -19,7 +19,15 @@ const setResponse_custom = (element, response, control_response) => {
         case "car_model":
             return getCurrenciesCar(element, response, true, "car_model car_number", response);
         case "product_name":
-            return getCurrencies(element, response, true, null, control_response);
+            return getCurrencies(element, response?.commodityOptions, true, null, control_response);
+        case "product_price":
+            return {...element, label: `${element.label} ${response?.defaultCurrencyCode}`};
+        case "product_cost":
+            return {...element, label: `${element.label} ${response?.defaultCurrencyCode}`};
+        case "ttn_product_vat_sum":
+            return {...element, label: `${element.label} ${response?.defaultCurrencyCode}`};
+        case "product_cost_with_vat":
+            return {...element, label: `${element.label} ${response?.defaultCurrencyCode}`};
         default:
             return element;
     }

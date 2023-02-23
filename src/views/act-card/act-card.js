@@ -12,11 +12,11 @@ function ActCard(props) {
     const [delivery, setDelivery] = useState(props.delivery);
     const [localPosition, setLocalPosition] = useState(props.productPosition_active);
 
-    const [entityType, setEntityType] = useState(props.tnOrTtn.find((el) => el.checked)?.value);
-    useEffect(() => {
-        const x = props.tnOrTtn.find((el) => el.checked)?.value;
-        setEntityType(x);
-    }, props.tnOrTtn);
+    const [entityType, setEntityType] = useState(props.tnOrTtn.find((el) => el.checked)?.value || "");
+    const changeTnOrTtn = (val) => {
+        setEntityType(val);
+        props.changeTnOrTtn(val);
+    };
     useEffect(() => {
         setLocalPosition(props.productPosition_active);
     }, [props.productPosition_active]);
@@ -63,7 +63,7 @@ function ActCard(props) {
             {step === "1" && <Form label="Выберите вид счета" value={type} items={props.unloadingBasis} change={changeType} />}
             <div className="form">
                 {step === "4" && <Form label="Позиция" value={localPosition} items={props.productPosition} change={changePosition} />}
-                {step === "3" && <Form label="Тип накладной" value={entityType} items={props.tnOrTtn} change={(val) => props.changeTnOrTtn(val)} />}
+                {step === "3" && <Form label="Тип накладной" value={entityType} items={props.tnOrTtn} change={changeTnOrTtn} />}
                 {listItems}
                 {step === "2" && Array.isArray(props.items[0].items) && <AccordionControl items={props.items} />}
                 {step === "1" && props.typesDelivery && <Box sx={{ mb: 2 }}><Form label="Выберите вид поставки" value={delivery} items={props.typesDelivery} change={changeDelivery} /></Box>}
