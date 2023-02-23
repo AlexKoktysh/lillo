@@ -55,20 +55,25 @@ export const changeMapper = (items) => {
     return result;
 };
 
-export const changeCommodity = (response, fieldName, parenValue) => {
+export const changeCommodity = (response, fieldName, parenValue, commodityDictionary) => {
     const obj = Object.values(response?.commodityDictionary);
     const defaultPrice = response?.defaultCurrencyCode;
-    const x = obj.find((el) => el.product_name === parenValue);
+    const findItem = obj.find((el) => el.product_name === parenValue);
     let item = null;
-    if (x) {
+    if (findItem) {
         item = obj.find((el) => el.product_name === parenValue)[fieldName];
+        if (fieldName === "product_price") {
+            const price = item ? item[defaultPrice] : "";
+            return price ? `${price}` : "";
+        }
+        return item ? `${item}` : "";
+    } else {
+        return setSaveCommodity(commodityDictionary)
     }
-    // const item = obj.find((el) => el.product_name === parenValue)[fieldName];
-    if (fieldName === "product_price") {
-        const price = item ? item[defaultPrice] : "";
-        return price ? `${price}` : "";
-    }
-    return item ? `${item}` : "";
+};
+const setSaveCommodity = (items) => {
+    const obj = items?.map((element) => element);
+    return obj;
 };
 
 export const changeTransport = (response, fieldName, parenValue) => {

@@ -10,7 +10,7 @@ const instance = axios.create({
 });
 instance.interceptors.response.use(
     (response) => response,
-    (error) => console.log((error))
+    (error) => alert((error))
 );
 
 export const getOrganizationTypes = async () => {
@@ -47,4 +47,14 @@ export const showSection = async (section) => {
 export const deleteSection = async (section) => {
     const response = await instance.post("remove_position", { "position": section });
     return response.status === 200;
+};
+
+export const updateCommodityDictionary = async (params) => {
+    const json = {...params};
+    await instance.post("update_section", json);
+};
+
+export const getCommodityDictionary = async () => {
+    const response = await instance.post("get_commodity_dictionary");
+    debugger;
 };

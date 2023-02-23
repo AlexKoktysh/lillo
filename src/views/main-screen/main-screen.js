@@ -7,7 +7,9 @@ import {
     sendTemplate,
     sendCommodityDictionary,
     showSection,
-    deleteSection
+    deleteSection,
+    getCommodityDictionary,
+    updateCommodityDictionary,
 } from "../../api/api";
 import {
     dogovorDictionary_default,
@@ -30,7 +32,7 @@ import {
     changeContrAgentsResult_custom,
     changeDogovorDictionary_result_custom,
     changeMapper,
-    changeTransport
+    changeTransport,
 } from "../../use/change_result_custom.js";
 
 function MainScreen() {
@@ -141,7 +143,7 @@ function MainScreen() {
                 } else {
                     return el;
                 }
-            })
+            });
             setCommodityDictionary(res);
         }
     };
@@ -172,7 +174,7 @@ function MainScreen() {
         if (!response?.commodityDictionary) {
             return;
         }
-        return changeCommodity(response, fieldName, parenValue);
+        return changeCommodity(response, fieldName, parenValue, commodityDictionary);
     };
     const changeContrAgents = (fieldName, parenValue) => {
         switch (fieldName) {
@@ -447,15 +449,38 @@ function MainScreen() {
     const deleteCommodityDictionary = async () => {
         const res = await deleteSection(productPosition_active);
         if (res) {
-            // setProductPosition_active(productPosition_active - 1);
+            setProductPosition_active(productPosition_active - 1);
             const response = await showSection(productPosition_active - 1);
             const resArray = [];
             for (let i = 0; i < response.data.sectionCount + 1; i++) {
                 resArray.push({ index: i, value: i + 1, label: i + 1 })
             }
-            debugger;
+            if (response.status === 200) {
+                const newCommodityDictionary = commodityDictionary?.map((element) => {
+                    const value = response.data.columns[element.fieldName];
+                    return {...element, value: value ? value : ""};
+                });
+                setCommodityDictionary(newCommodityDictionary);
+            }
             setProductPosition(resArray);
         }
+    };
+    const changeProductPosition_active = (value) => {
+        const isAll_commodityDictionary = commodityDictionary.filter((el) => !el.value && el.require);
+        if (!isAll_commodityDictionary?.length) {
+            const res = commodityDictionary?.map((element) => {
+                if (element.fieldName === "product_name") {
+                    const field_name = Object.values(element.controlValue)?.find((el) => el.product_name === element.value)?.product_name;
+                    return { fieldName: element.fieldName, value: field_name };
+                }
+                return { fieldName: element.fieldName, value: element.value };
+            });
+            const item = Object.values(response.commodityDictionary)?.find((el) => el.product_name === commodityDictionary[0].value)?.ttnProductQty;
+            res.push({fieldName: "ttn_max_qty", value: item});
+            res.push({fieldName: "ttn_commodity_position", value: productPosition_active});
+            updateCommodityDictionary(res);
+        }
+        setProductPosition_active(value)
     };
 
     return (
@@ -484,7 +509,7 @@ function MainScreen() {
                     addCommodityDictionary={addCommodityDictionary}
                     productPosition={productPosition}
                     productPosition_active={productPosition_active}
-                    changeProductPosition_active={(value) => setProductPosition_active(value)}
+                    changeProductPosition_active={changeProductPosition_active}
                     deleteCommodityDictionary={deleteCommodityDictionary}
                 />}
         </div>

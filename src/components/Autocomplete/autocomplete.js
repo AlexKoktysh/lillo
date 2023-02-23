@@ -22,6 +22,10 @@ function AutocompleteField(props) {
             case "Наименование товара":
                 const obj = Object.values(props.item.controlValue);
                 const product = props.item.value !== "" ? obj.find((el) => el.product_name === props.item.value) : "";
+                if (!product) {
+                    const results = {index: props.item?.index || "", label: props.item?.value || ""};
+                    return setLabel(results);
+                }
                 const res = {index: product?.id || "", label: product?.product_name || ""};
                 setLabel(res);
                 break;
