@@ -52,7 +52,7 @@ function ActCard(props) {
     const changeDate = (label, value) => {
         props.changeDate(label, value);
     };
-    const listItems = step !== "2" && props.items.map((item) =>
+    const listItems = step !== "2" && props.items?.map((item) =>
         !item.header
             ? <TextFieldControl item={item} key={item.index} change={change} addCar={addCar} addProduct={addProduct} changeDate={changeDate} />
             : <div key={item.index} className="header">{item.header}</div>

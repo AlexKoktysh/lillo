@@ -37,7 +37,7 @@ function AutocompleteField(props) {
             freeSolo
             value={label}
             onChange={save}
-            options={props.item.currencies.map((option) => option)}
+            options={props.item.currencies?.map((option) => option)}
             renderInput={(params) => {
                 return <TextField {...params} label={props.item.label} onChange={newCar} />
             }}

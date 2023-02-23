@@ -1,7 +1,14 @@
 import { useEffect, useState, useMemo } from "react";
 import Form from "../../components/FormControl/form-control.js";
 import ActCard from "../act-card/act-card.js";
-import { getOrganizationTypes, getDataForCreateTtn, sendTemplate, sendCommodityDictionary, showSection, deleteSection } from "../../api/api";
+import {
+    getOrganizationTypes,
+    getDataForCreateTtn,
+    sendTemplate,
+    sendCommodityDictionary,
+    showSection,
+    deleteSection
+} from "../../api/api";
 import {
     dogovorDictionary_default,
     organizationInformation_default,
@@ -12,9 +19,17 @@ import {
     personInformation_default,
     tnOrTtnField,
     steps,
-        } from "../../constants/index.js";
+} from "../../constants/index.js";
 import "./main-screen.scss";
 import moment from "moment/moment.js";
+import { setResponseMapper } from "../../use/setResponse.js";
+import { changeDate_custom } from "../../use/changeDate.js";
+import {
+    changeAvailableTransport_result_custom,
+    changeContrAgentsResult_custom,
+    changeDogovorDictionary_result_custom,
+    changeMapper
+} from "../../use/change_result_custom.js";
 
 function MainScreen() {
     const [serverResult, setServerResult] = useState([]);
@@ -59,7 +74,7 @@ function MainScreen() {
                 setProductPosition(resArray);
             }
             if (response.status === 200) {
-                const newCommodityDictionary = commodityDictionary.map((element) => {
+                const newCommodityDictionary = commodityDictionary?.map((element) => {
                     const value = response.data.columns[element.fieldName];
                     return {...element, value: value ? value : ""};
                 });
@@ -115,12 +130,12 @@ function MainScreen() {
         }));
     };
     const addProduct = (item, value) => {
-        const y = Object.values(item.controlValue);
-        const x = y?.find((el) => el.product_name === value);
-        if (x) {
-            const res = commodityDictionary.map((el) => {
+        const server_product = Object.values(item.controlValue);
+        const product = server_product?.find((el) => el.product_name === value);
+        if (product) {
+            const res = commodityDictionary?.map((el) => {
                 if (el.label === item.label) {
-                    return {...el, value: x.product_name};
+                    return {...el, value: product.product_name};
                 } else {
                     return el;
                 }
@@ -129,11 +144,11 @@ function MainScreen() {
         }
     };
     const addCar = (item, value) => {
-        const x = item.currencies.find((el) => el.index === value);
-        if (x) {
-            const res = availableTransport.map((el) => {
+        const car = item.currencies.find((el) => el.index === value);
+        if (car) {
+            const res = availableTransport?.map((el) => {
                 if (el.label === item.label) {
-                    return {...el, value: x.index};
+                    return {...el, value: car.index};
                 } else {
                     return el;
                 }
@@ -142,7 +157,7 @@ function MainScreen() {
         }
         const ind = item.currencies.length;
         const pushItem = {index: ind, label: value};
-        const res = availableTransport.map((el) => {
+        const res = availableTransport?.map((el) => {
             if (el.label === item.label) {
                 return {...el, value: ind, currencies: [...el.currencies, pushItem]};
             } else {
@@ -225,13 +240,13 @@ function MainScreen() {
         const parent = items.find((el) => el.select);
         if (parent.value !== "") {
             const controlItems = items.filter((el) => controlsInput.find((element) => el.label === element));
-            const changeItems = controlItems.map((el) => {
+            const changeItems = controlItems?.map((el) => {
                 return {
                     ...el,
                     value: changeFunction(el.label, parent.value),
                 };
             });
-            const resultObj = items.map((el) => {
+            const resultObj = items?.map((el) => {
                 const found = changeItems.find((element) => element.index === el.index);
                 if (found) return found;
                 return el;
@@ -246,7 +261,7 @@ function MainScreen() {
     useMemo(() => {
         if (commodityDictionary[4].value && commodityDictionary[6].value) {
             const sum = commodityDictionary[4].value + commodityDictionary[6].value;
-            const resObj = commodityDictionary.map((element) => {
+            const resObj = commodityDictionary?.map((element) => {
                 if (element.label === "Стоимость с НДС") {
                     return {
                         ...element,
@@ -261,7 +276,7 @@ function MainScreen() {
     useMemo(() => {
         if (commodityDictionary[4].value && commodityDictionary[5].value) {
             const sum = commodityDictionary[4].value * (commodityDictionary[5].value / 100);
-            const resObj = commodityDictionary.map((element) => {
+            const resObj = commodityDictionary?.map((element) => {
                 if (element.label === "Сумма НДС") {
                     return {
                         ...element,
@@ -276,7 +291,7 @@ function MainScreen() {
     useMemo(() => {
         if (commodityDictionary[2].value && commodityDictionary[3].value) {
             const sum = commodityDictionary[2].value * commodityDictionary[3].value;
-            const resObj = commodityDictionary.map((element) => {
+            const resObj = commodityDictionary?.map((element) => {
                 if (element.label === "Стоимость по количеству") {
                     return {
                         ...element,
@@ -300,7 +315,7 @@ function MainScreen() {
         }
         const isAll_commodityDictionary = commodityDictionary.filter((el) => !el.value && el.require);
         if (!isAll_commodityDictionary?.length) {
-            const res = commodityDictionary.map((element) => {
+            const res = commodityDictionary?.map((element) => {
                 if (element.fieldName === "product_name") {
                     const field_name = Object.values(element.controlValue)?.find((el) => el.product_name === element.value)?.product_name;
                     return { fieldName: element.fieldName, value: field_name };
@@ -320,86 +335,10 @@ function MainScreen() {
         const typesDelivery_server = response.deliveryConditions?.map((el, index) => {
             return { index: index, label: el.label, value: index + 1 };
         });
-        const contrAgents_server = contrAgents.map((element) => {
-            const name = element.label;
-            switch (name) {
-                case "Отгрузку разрешил":
-                    return {
-                        ...element,
-                        currencies: response.ttnPersons?.map((el, index) => {
-                            return { ...el, index: index, label: el.last_name };
-                        }),
-                    };
-                case "Груз сдал":
-                    return {
-                        ...element,
-                        currencies: response.ttnPersons?.map((el, index) => {
-                            return { ...el, index: index, label: el.last_name };
-                        }),
-                    };
-                case "Товар к доставке принял":
-                    return {
-                        ...element,
-                        currencies: response.ttnPersons?.map((el, index) => {
-                            return { ...el, index: index, label: el.last_name };
-                        }),
-                        controlValue: response.ttnPersons,
-                    }
-                default:
-                    return element;
-            }
-        });
-        const dogovorDictionary_server = dogovorDictionary.map((element) => {
-            const name = element.label;
-            switch (name) {
-                case "Номер счета":
-                    return {
-                        ...element,
-                        value: response.docNumber || ""
-                    };
-                case "Номер договора":
-                    return {
-                        ...element,
-                        select: response.dogovorNumbers?.length > 0,
-                        currencies: response.dogovorDictionary?.map((el, index) => {
-                            return { index: index, label: el.doc_number };
-                        }),
-                        controlValue: response.dogovorDictionary,
-                    };
-                default:
-                    return element;
-            }
-        });
-        const availableTransport_server = availableTransport.map((element) => {
-            const name = element.label;
-            switch (name) {
-                case "Транспорт":
-                    return {
-                        ...element,
-                        currencies: response.availableTransport?.map((el, index) => {
-                            return { index: index, label: `${el.car_model} ${el.car_number}` };
-                        }),
-                        controlValue: response.availableTransport,
-                    };
-                default:
-                    return element;
-            }
-        });
-        const commodityDictionary_server = commodityDictionary.map((element) => {
-            const name = element.label;
-            switch (name) {
-                case "Наименование товара":
-                    return {
-                        ...element,
-                        currencies: response.commodityOptions?.map((el, index) => {
-                            return { index: index, label: el };
-                        }),
-                        controlValue: response.commodityDictionary,
-                    };
-                default:
-                    return element;
-            }
-        });
+        const contrAgents_server = setResponseMapper(contrAgents, response?.ttnPersons);
+        const dogovorDictionary_server = setResponseMapper(dogovorDictionary, response);
+        const availableTransport_server = setResponseMapper(availableTransport, response?.availableTransport);
+        const commodityDictionary_server = setResponseMapper(commodityDictionary, response?.commodityOptions, response?.commodityDictionary);
         const unloadingBasis_server = response.unloadingBasis || [];
         setUnloadingBasis(unloadingBasis_server);
         setAvailableTransport(availableTransport_server);
@@ -410,10 +349,10 @@ function MainScreen() {
     }, [response]);
     const setContrAgent = () => {
         const controlValue = dogovorDictionary[3].value;
-        const organizationInformation_server = organizationInformation.map((item) => {
+        const organizationInformation_server = organizationInformation?.map((item) => {
             return {...item, value: controlValue !== "" ? response.contrAgents[controlValue][item.server] : "", disabled: true};
         });
-        const personInformation_server = personInformation.map((item) => {
+        const personInformation_server = personInformation?.map((item) => {
             return {...item, value: controlValue !== "" ? response.contrAgents[controlValue][item.server] : "", disabled: true};
         });
         const res = [
@@ -458,49 +397,25 @@ function MainScreen() {
             typesDelivery_server !== "" &&
             isAll_unloadingBasis
             ) {
-                const dogovorDictionary_result = dogovorDictionary.filter((el) => !el.header).map((element) => {
-                    if (element.fieldName === "doc_number") {
-                        const field_name = element.currencies[element.value]?.label;
-                        return { fieldName: element.fieldName, value: field_name };
-                    }
-                    return {fieldName: element.fieldName, value: element.value}
-                });
-                const organizationInformation_result = organizationInformation.map((element) => {
-                    return {fieldName: element.fieldName, value: element.value}
-                });
-                const personInformation_result = personInformation.map((element) => {
-                    return {fieldName: element.fieldName, value: element.value}
-                });
-                const contrAgents_result = contrAgents.map((element) => {
-                    if (element.label === "Доверенность") {
-                        const x = element.value.split(" ");
-                        const resObj_dov = {fieldName: "rights_number", value: x[0]};
-                        const resObj_date = {fieldName: "rights_date", value: x[2]};
-                        return {...resObj_dov, ...resObj_date};
-                    }
-                    if (element.label === "ФИО") {
-                        const x = element.value.split(" ");
-                        const last_name = {fieldName: "rights_last_name", value: x[0]};
-                        const name = {fieldName: "rights_name", value: x[1]};
-                        const second_name = {fieldName: "rights_second_name", value: x[2]};
-                        return {...last_name, ...name, ...second_name};
-                    }
-                    return {fieldName: element.fieldName, value: element.value}
-                });
-                const availableTransport_result = availableTransport.map((element) => {
-                    if (element.fieldName === "car_model") {
-                        const field_name = availableTransport[0].controlValue[availableTransport[0].value]?.car_model;
-                        return { fieldName: element.fieldName, value: field_name };
-                    }
-                    if (element.fieldName === "car_number") {
-                        const field_name = availableTransport[0].controlValue[availableTransport[0].value]?.car_number;
-                        return { fieldName: element.fieldName, value: field_name };
-                    }
-                    return {fieldName: element.fieldName, value: element.value}
-                });
+                const dogovorDictionary_result = dogovorDictionary
+                    .filter((el) => !el.header)
+                    ?.map((element) => changeDogovorDictionary_result_custom(element));
+                
+                const organizationInformation_result = changeMapper(organizationInformation);
+                
+                const personInformation_result = changeMapper(personInformation);
+                
+                const contrAgents_result = contrAgents?.map((element) => changeContrAgentsResult_custom(element));
+                
+                const availableTransport_result = availableTransport
+                    ?.map((element) => changeAvailableTransport_result_custom(element, availableTransport));
+                
                 const org_type_id = {fieldName: "org_type_id", value: organization_types_server};
+                
                 const delivery_conditions_id = {fieldName: "deliv_cond_id", value: typesDelivery_server};
+                
                 const unloading_basis_id = {fieldName: "unloading_basis_id", value: isAll_unloadingBasis.value};
+                
                 const res = [
                     ...dogovorDictionary_result,
                     ...organizationInformation_result,
@@ -528,13 +443,13 @@ function MainScreen() {
         unloadingBasis,
     ]);
     const changeType = (value) => {
-        const changeUnloadingBasis = unloadingBasis.map((el) => {
+        const changeUnloadingBasis = unloadingBasis?.map((el) => {
             return el.value == value ? { ...el, checked: true } : el;
         });
         setUnloadingBasis(changeUnloadingBasis);
     };
     const changeTnOrTtn = (val) => {
-        const changeItem = tnOrTtn.map((el) => {
+        const changeItem = tnOrTtn?.map((el) => {
             if (el.value === val) {
                 return {...el, checked: true};
             } else {
@@ -549,29 +464,9 @@ function MainScreen() {
     const changeDate = (label, value) => {
         switch (label) {
             case "Дата начала счета":
-                const resDog = dogovorDictionary.map((el) => {
-                    if (el.label === label) {
-                        return {
-                            ...el,
-                            value
-                        };
-                    }
-                    return el;
-                });
-                setDogovorDictionary(resDog);
-                break;
+                return changeDate_custom(dogovorDictionary, label, value, setDogovorDictionary);
             case "Дата отгрузки":
-                const resDict = contrAgents.map((el) => {
-                    if (el.label === label) {
-                        return {
-                            ...el,
-                            value
-                        };
-                    }
-                    return el;
-                });
-                setContrAgents(resDict);
-                break;
+                return changeDate_custom(contrAgents, label, value, setContrAgents);
             default:
                 return;
         }
