@@ -15,6 +15,7 @@ function DatePickerControl(props) {
     };
     useEffect(() => {
         setDate(defaultDate);
+        props.change(props.item.label, defaultDate);
     }, [defaultDate]);
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>

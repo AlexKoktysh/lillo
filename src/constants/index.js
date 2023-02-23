@@ -44,8 +44,8 @@ export const personInformation_default = [
 ];
 
 export const contrAgents_default = [
-    { index: "0", value: "", label: "Дата отгрузки", date: true, require: true },
-    { index: "1", value: "", label: "Основания отгрузки", require: false },
+    { index: "0", value: "", label: "Дата отгрузки", date: true, require: true, fieldName: "shipping_date" },
+    { index: "1", value: "", label: "Основания отгрузки", require: false, fieldName: "shipment_grounds" },
     {
         index: "2",
         value: "",
@@ -53,6 +53,7 @@ export const contrAgents_default = [
         select: true,
         currencies: [],
         require: true,
+        fieldName: "allowed_person_id"
     },
     { 
         index: "3",
@@ -61,6 +62,7 @@ export const contrAgents_default = [
         select: true,
         currencies: [],
         require: true,
+        fieldName: "handed_person_id"
     },
     { 
         index: "4",
@@ -71,8 +73,9 @@ export const contrAgents_default = [
         controlInput: ["Доверенность", "ФИО"],
         controlValue: "",
         require: true,
+        fieldName: "received_person_id"
     },
-    { index: "5", value: "", label: "Доверенность", require: true },
+    { index: "5", value: "", label: "Доверенность", require: true, fieldName: "rights_number"},
     { index: "6", value: "", label: "ФИО", require: true },
 ];
 export const commodityDictionary_default = [

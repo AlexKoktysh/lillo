@@ -52,8 +52,8 @@ function MainScreen() {
         const fetch = async () => {
             const response = await showSection(productPosition_active);
             const resArray = [...productPosition];
-            if (response?.data?.sectionCount > 1) {
-                for (let i = 1; i < response.sectionCount; i++) {
+            if (response?.data?.sectionCount >= 1 && response.data.sectionCount + 1 > productPosition.length) {
+                for (let i = 1; i < response.data.sectionCount + 1; i++) {
                     resArray.push({ index: i, value: i + 1, label: i + 1 })
                 }
                 setProductPosition(resArray);
@@ -165,7 +165,6 @@ function MainScreen() {
                 return measure ? `${measure}` : "";
             case "Примечания (необязательное)":
                 const notes = obj.find((el) => el.product_name === parenValue)?.notes;
-                debugger;
                 return notes ? `${notes}` : "";
             case "Страна ввоза (необязательное)":
                 const country = obj.find((el) => el.product_name === parenValue)?.country_import;
@@ -313,7 +312,9 @@ function MainScreen() {
             res.push({fieldName: "ttn_commodity_position", value: productPosition_active});
             setIsShowAddCommodityDictionary(true);
             setCommodityDictionary_result(res);
+            return;
         }
+        setIsShowAddCommodityDictionary(false);
     }, [commodityDictionary, step]);
     useEffect(() => {
         const typesDelivery_server = response.deliveryConditions?.map((el, index) => {
@@ -446,12 +447,16 @@ function MainScreen() {
         const isAll_personInformation = personInformation.filter((el) => el.value === "" && el.require);
         const isAll_contrAgents = contrAgents.filter((el) => el.value === "" && el.require);
         const isAll_availableTransport = availableTransport.filter((el) => el.value === "" && el.require);
+        const isAll_unloadingBasis = unloadingBasis.find((el) => el.checked);
         if (
             !isAll_dogovorDictionary.length &&
             !isAll_organizationInformation.length &&
             !isAll_personInformation.length &&
             !isAll_contrAgents.length &&
-            !isAll_availableTransport.length
+            !isAll_availableTransport.length &&
+            organization_types_server !== "" &&
+            typesDelivery_server !== "" &&
+            isAll_unloadingBasis
             ) {
                 const dogovorDictionary_result = dogovorDictionary.filter((el) => !el.header).map((element) => {
                     if (element.fieldName === "doc_number") {
@@ -467,31 +472,61 @@ function MainScreen() {
                     return {fieldName: element.fieldName, value: element.value}
                 });
                 const contrAgents_result = contrAgents.map((element) => {
+                    if (element.label === "Доверенность") {
+                        const x = element.value.split(" ");
+                        const resObj_dov = {fieldName: "rights_number", value: x[0]};
+                        const resObj_date = {fieldName: "rights_date", value: x[2]};
+                        return {...resObj_dov, ...resObj_date};
+                    }
+                    if (element.label === "ФИО") {
+                        const x = element.value.split(" ");
+                        const last_name = {fieldName: "rights_last_name", value: x[0]};
+                        const name = {fieldName: "rights_name", value: x[1]};
+                        const second_name = {fieldName: "rights_second_name", value: x[2]};
+                        return {...last_name, ...name, ...second_name};
+                    }
                     return {fieldName: element.fieldName, value: element.value}
                 });
                 const availableTransport_result = availableTransport.map((element) => {
                     if (element.fieldName === "car_model") {
-                        const field_name = element.currencies[element.value]?.label;
+                        const field_name = availableTransport[0].controlValue[availableTransport[0].value]?.car_model;
+                        return { fieldName: element.fieldName, value: field_name };
+                    }
+                    if (element.fieldName === "car_number") {
+                        const field_name = availableTransport[0].controlValue[availableTransport[0].value]?.car_number;
                         return { fieldName: element.fieldName, value: field_name };
                     }
                     return {fieldName: element.fieldName, value: element.value}
                 });
+                const org_type_id = {fieldName: "org_type_id", value: organization_types_server};
+                const delivery_conditions_id = {fieldName: "deliv_cond_id", value: typesDelivery_server};
+                const unloading_basis_id = {fieldName: "unloading_basis_id", value: isAll_unloadingBasis.value};
                 const res = [
                     ...dogovorDictionary_result,
                     ...organizationInformation_result,
                     ...personInformation_result,
                     ...contrAgents_result,
                     ...availableTransport_result,
+                    org_type_id,
+                    delivery_conditions_id,
+                    unloading_basis_id,
                 ];
                 setServerResult(res);
                 setIsShowSample(true);
             } else {
                 setIsShowSample(false);
             }
-        // organization_types_server тип организации (ИП, ООО)
-        // typesDelivery_server вид оплаты (пред, пост и т.д.)
-        // unloadingBasis вид энтити (договор или счет) массив
-    }, [dogovorDictionary, organizationInformation, personInformation, contrAgents, availableTransport, commodityDictionary]);
+    }, [
+        dogovorDictionary,
+        organizationInformation,
+        personInformation,
+        contrAgents,
+        availableTransport,
+        commodityDictionary,
+        organization_types_server,
+        typesDelivery_server,
+        unloadingBasis,
+    ]);
     const changeType = (value) => {
         const changeUnloadingBasis = unloadingBasis.map((el) => {
             return el.value == value ? { ...el, checked: true } : el;
