@@ -447,9 +447,14 @@ function MainScreen() {
     const deleteCommodityDictionary = async () => {
         const res = await deleteSection(productPosition_active);
         if (res) {
-            setProductPosition_active(productPosition_active - 1);
-            await showSection(productPosition_active - 1);
+            // setProductPosition_active(productPosition_active - 1);
+            const response = await showSection(productPosition_active - 1);
+            const resArray = [];
+            for (let i = 0; i < response.data.sectionCount + 1; i++) {
+                resArray.push({ index: i, value: i + 1, label: i + 1 })
+            }
             debugger;
+            setProductPosition(resArray);
         }
     };
 

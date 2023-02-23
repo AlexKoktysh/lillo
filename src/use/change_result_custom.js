@@ -58,9 +58,14 @@ export const changeMapper = (items) => {
 export const changeCommodity = (response, fieldName, parenValue) => {
     const obj = Object.values(response?.commodityDictionary);
     const defaultPrice = response?.defaultCurrencyCode;
-    const item = obj.find((el) => el.product_name === parenValue)[fieldName];
+    const x = obj.find((el) => el.product_name === parenValue);
+    let item = null;
+    if (x) {
+        item = obj.find((el) => el.product_name === parenValue)[fieldName];
+    }
+    // const item = obj.find((el) => el.product_name === parenValue)[fieldName];
     if (fieldName === "product_price") {
-        const price = item[defaultPrice];
+        const price = item ? item[defaultPrice] : "";
         return price ? `${price}` : "";
     }
     return item ? `${item}` : "";
