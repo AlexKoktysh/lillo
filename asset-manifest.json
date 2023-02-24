@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/lillo/static/css/main.9d22f736.css",
+    "main.js": "/lillo/static/js/main.860fc2e7.js",
+    "index.html": "/lillo/index.html",
+    "main.9d22f736.css.map": "/lillo/static/css/main.9d22f736.css.map",
+    "main.860fc2e7.js.map": "/lillo/static/js/main.860fc2e7.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.9d22f736.css",
+    "static/js/main.860fc2e7.js"
+  ]
+}
