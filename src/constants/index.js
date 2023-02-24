@@ -133,5 +133,5 @@ export const steps = [
     { index: "0", value: "1", label: "1" },
     { index: "1", value: "2", label: "2" },
     { index: "2", value: "3", label: "3" },
-    { index: "3", value: "4", label: "4" },
+    // { index: "3", value: "4", label: "4" },
 ];

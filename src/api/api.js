@@ -54,7 +54,6 @@ export const updateCommodityDictionary = async (params) => {
     await instance.post("update_section", json);
 };
 
-export const getCommodityDictionary = async () => {
-    const response = await instance.post("get_commodity_dictionary");
-    debugger;
+export const getCommodityDictionary = async (searchText) => {
+    const response = await instance.post("get_commodity_dictionary",  { filter: searchText });
 };

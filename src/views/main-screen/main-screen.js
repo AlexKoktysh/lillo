@@ -65,7 +65,11 @@ function MainScreen() {
             startValue && setOrganizationTypesServer(startValue.value);
             setTypes(response);
         };
+        const fetchCommodity = async () => {
+            const response = await getCommodityDictionary("");
+        }
         fetch();
+        fetchCommodity();
     }, []);
     useEffect(() => {
         const fetch = async () => {
