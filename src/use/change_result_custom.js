@@ -35,7 +35,7 @@ export const changeAvailableTransport_result_custom = (element, availableTranspo
 export const changeDogovorDictionary_result_custom = (element) => {
     switch (element.fieldName) {
         case "doc_number":
-            const field_name = element.currencies[element.value]?.label || "";
+            const field_name = element.currencies?.find((el) => el.label === element.value)?.label || "";
             return { fieldName: element.fieldName, value: field_name };
         case "check_start_date":
             const date = moment(element.value, "YYYY-MM-DD").format("DD.MM.YYYY")
@@ -55,9 +55,9 @@ export const changeMapper = (items) => {
     return result;
 };
 
-export const changeCommodity = (response, fieldName, parenValue, commodityDictionary) => {
+export const changeCommodity = (response, fieldName, parenValue, commodityDictionary, defResponse) => {
     const obj = Object.values(response?.commodityDictionary);
-    const defaultPrice = response?.defaultCurrencyCode;
+    const defaultPrice = defResponse?.defaultCurrencyCode;
     const findItem = obj.find((el) => el.product_name === parenValue);
     let item = null;
     if (findItem) {
@@ -74,6 +74,11 @@ export const changeCommodity = (response, fieldName, parenValue, commodityDictio
 const setSaveCommodity = (items) => {
     const obj = items?.map((element) => element);
     return obj;
+};
+export const changeDogovor = (response, fieldName, parenValue) => {
+    if (fieldName === "doc_start_date") {
+        return response?.dogovorDictionary.find((el) => el.doc_number === parenValue)?.doc_start_date || "";
+    }
 };
 
 export const changeTransport = (response, fieldName, parenValue) => {

@@ -49,12 +49,15 @@ function ActCard(props) {
     const addProduct = (item, value) => {
         props.addProduct(item, value);
     };
+    const addDogovor = (item, value) => {
+        props.addDogovor(item, value);
+    };
     const changeDate = (label, value) => {
         props.changeDate(label, value);
     };
     const listItems = step !== "2" && props.items?.map((item) =>
         !item.header
-            ? <TextFieldControl item={item} key={item.index} change={change} addCar={addCar} addProduct={addProduct} changeDate={changeDate} />
+            ? <TextFieldControl commodityDictionary={props.commodityDictionary} item={item} key={item.index} change={change} addCar={addCar} addProduct={addProduct} addDogovor={addDogovor} changeDate={changeDate} getNewCurrencies={props.getNewCurrencies} />
             : <div key={item.index} className="header">{item.header}</div>
     );
 

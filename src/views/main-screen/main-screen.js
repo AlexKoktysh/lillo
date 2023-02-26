@@ -1,8 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
-import Form from "../../components/FormControl/form-control.js";
 import ActCard from "../act-card/act-card.js";
 import {
-    getOrganizationTypes,
     getDataForCreateTtn,
     sendTemplate,
     sendCommodityDictionary,
@@ -24,7 +22,7 @@ import {
 } from "../../constants/index.js";
 import "./main-screen.scss";
 import moment from "moment/moment.js";
-import { setResponseMapper } from "../../use/setResponse.js";
+import { setResponseMapper, changeLabel } from "../../use/setResponse.js";
 import { changeDate_custom } from "../../use/changeDate.js";
 import {
     changeAvailableTransport_result_custom,
@@ -33,12 +31,11 @@ import {
     changeDogovorDictionary_result_custom,
     changeMapper,
     changeTransport,
+    changeDogovor,
 } from "../../use/change_result_custom.js";
 
 function MainScreen() {
     const [serverResult, setServerResult] = useState([]);
-    const [organization_types_server, setOrganizationTypesServer] = useState("");
-    const [organization_types, setTypes] = useState({});
     const [response, setResponse] = useState([]);
     const [step, setStep] = useState("");
     const [typesDelivery, setTypesDelivery] = useState([]);
@@ -58,20 +55,37 @@ function MainScreen() {
     const [commodityDictionary_result, setCommodityDictionary_result] = useState([]);
     const [productPosition, setProductPosition] = useState([{ index: 0, value: 1, label: 1 }]);
     const [productPosition_active, setProductPosition_active] = useState(1);
+    const [server_commodityDictionary, setServer_commodityDictionary] = useState({});
+    const [productPosition_prev, setProductPosition_prev] = useState(1);
     useEffect(() => {
         const fetch = async () => {
-            const response = await getOrganizationTypes();
-            const startValue = response.find((item) => item.checked);
-            startValue && setOrganizationTypesServer(startValue.value);
-            setTypes(response);
+            const response = await getDataForCreateTtn();
+            setResponse(response);
         };
         const fetchCommodity = async () => {
             const response = await getCommodityDictionary("");
+            setServer_commodityDictionary(response);
         }
         fetch();
         fetchCommodity();
     }, []);
     useEffect(() => {
+        const fetchCommodity = async () => {
+            const response = await getCommodityDictionary("");
+            setServer_commodityDictionary(response);
+        }
+        const update = () => {
+            const isAll_commodityDictionary = commodityDictionary.filter((el) => !el.value && el.require);
+            if (!isAll_commodityDictionary?.length) {
+                const res = commodityDictionary?.map((element) => {
+                    return { fieldName: element.fieldName, value: element.value };
+                });
+                const ttn_max_qty = commodityDictionary[0].ttn_max_qty;
+                res.push({fieldName: "ttn_max_qty", value: ttn_max_qty});
+                res.push({fieldName: "ttn_commodity_position", value: productPosition_prev});
+                ttn_max_qty && updateCommodityDictionary(res);
+            }
+        };
         const fetch = async () => {
             const response = await showSection(productPosition_active);
             const resArray = [...productPosition];
@@ -84,13 +98,22 @@ function MainScreen() {
             if (response.status === 200) {
                 const newCommodityDictionary = commodityDictionary?.map((element) => {
                     const value = response.data.columns[element.fieldName];
+                    if (element.fieldName === "product_name") {
+                        return {...element, value: value ? value : "", ttn_max_qty: response.data.columns.ttn_max_qty || ""};
+                    }
                     return {...element, value: value ? value : ""};
                 });
                 setCommodityDictionary(newCommodityDictionary);
             }
         };
+        update();
+        fetchCommodity();
         fetch();
     }, [productPosition_active]);
+    const fetchCommodity = async (value) => {
+        const response = await getCommodityDictionary(value);
+        setServer_commodityDictionary(response);
+    }
     useEffect(() => {
         const item = tnOrTtn.find((el) => el.checked)?.label;
         if (item === "ТТН") {
@@ -137,18 +160,35 @@ function MainScreen() {
             }
         }));
     };
-    const addProduct = (item, value) => {
+    const getNewCurrencies = async (value) => {
+        fetchCommodity(value);
+    };
+    const addProduct = async (item, value) => {
         const server_product = Object.values(item.controlValue);
-        const product = server_product?.find((el) => el.product_name === value);
+        const product = server_product?.find((el) => el === value);
         if (product) {
             const res = commodityDictionary?.map((el) => {
                 if (el.fieldName === item.fieldName) {
-                    return {...el, value: product.product_name};
+                    return {...el, value: product};
                 } else {
                     return el;
                 }
             });
             setCommodityDictionary(res);
+        }
+    };
+    const addDogovor = (item, value) => {
+        const server_dogovor = item.controlValue;
+        const dogovor = server_dogovor?.find((el) => el.doc_number === value);
+        if (dogovor) {
+            const res = dogovorDictionary?.map((el) => {
+                if (el.fieldName === item.fieldName) {
+                    return {...el, value: dogovor.doc_number};
+                } else {
+                    return el;
+                }
+            });
+            return setDogovorDictionary(res);
         }
     };
     const addCar = (item, value) => {
@@ -175,10 +215,10 @@ function MainScreen() {
         setAvailableTransport(res);
     };
     const changeCommodityDictionary = (fieldName, parenValue) => {
-        if (!response?.commodityDictionary) {
+        if (!Object.values(server_commodityDictionary).length) {
             return;
         }
-        return changeCommodity(response, fieldName, parenValue, commodityDictionary);
+        return changeCommodity(server_commodityDictionary, fieldName, parenValue, commodityDictionary, response);
     };
     const changeContrAgents = (fieldName, parenValue) => {
         switch (fieldName) {
@@ -202,6 +242,12 @@ function MainScreen() {
         }
         return changeTransport(response, fieldName, parenValue);
     };
+    const changeDogovorDictionary = (fieldName, parenValue) => {
+        if (!response?.dogovorDictionary) {
+            return;
+        }
+        return changeDogovor(response, fieldName, parenValue);
+    };
     const expensiveCalculation = (items, changeFunction, setFunction, val) => {
         const controlsInput = items[val].controlInput;
         const parent = items.find((el) => el.select && (el.fieldName !== "allowed_person_id" && el.fieldName !== "handed_person_id"));
@@ -224,6 +270,7 @@ function MainScreen() {
     useMemo(() => expensiveCalculation(availableTransport, changeAvailableTransport, setAvailableTransport, 0), [availableTransport[0].value]);
     useMemo(() => expensiveCalculation(contrAgents, changeContrAgents, setContrAgents, 4), [contrAgents[4].value]);
     useMemo(() => expensiveCalculation(commodityDictionary, changeCommodityDictionary, setCommodityDictionary, 0), [commodityDictionary[0].value]);
+    useMemo(() => expensiveCalculation(dogovorDictionary, changeDogovorDictionary, setDogovorDictionary, 3), [dogovorDictionary[3].value]);
 
     useMemo(() => {
         if (commodityDictionary[4].value && commodityDictionary[6].value) {
@@ -271,25 +318,18 @@ function MainScreen() {
         }
     }, [commodityDictionary[2].value, commodityDictionary[3].value]);
 
-    const changeOrganizationTypes = async (value) => {
-        setOrganizationTypesServer(value);
-        const response = await getDataForCreateTtn();
-        setResponse(response);
-    };
     useEffect(() => {
-        if (!response?.commodityDictionary && step !== "4") {
+        if (!server_commodityDictionary?.commodityDictionary && step !== "4") {
             return;
         }
         const isAll_commodityDictionary = commodityDictionary.filter((el) => !el.value && el.require);
         if (!isAll_commodityDictionary?.length) {
+            const item =
+                Object.values(server_commodityDictionary?.commodityDictionary)
+                    ?.find((el) => el.product_name === commodityDictionary[0].value)?.ttnProductQty || commodityDictionary[0].ttn_max_qty;
             const res = commodityDictionary?.map((element) => {
-                if (element.fieldName === "product_name") {
-                    const field_name = Object.values(element.controlValue)?.find((el) => el.product_name === element.value)?.product_name;
-                    return { fieldName: element.fieldName, value: field_name };
-                }
                 return { fieldName: element.fieldName, value: element.value };
             });
-            const item = Object.values(response.commodityDictionary)?.find((el) => el.product_name === commodityDictionary[0].value)?.ttnProductQty;
             res.push({fieldName: "ttn_max_qty", value: item});
             res.push({fieldName: "ttn_commodity_position", value: productPosition_active});
             setIsShowAddCommodityDictionary(true);
@@ -305,22 +345,28 @@ function MainScreen() {
         const contrAgents_server = setResponseMapper(contrAgents, response?.ttnPersons);
         const dogovorDictionary_server = setResponseMapper(dogovorDictionary, response);
         const availableTransport_server = setResponseMapper(availableTransport, response?.availableTransport);
-        const commodityDictionary_server = setResponseMapper(commodityDictionary, response, response?.commodityDictionary);
         const unloadingBasis_server = response.unloadingBasis || [];
         setUnloadingBasis(unloadingBasis_server);
         setAvailableTransport(availableTransport_server);
         setDogovorDictionary(dogovorDictionary_server);
         setTypesDelivery(typesDelivery_server);
         setContrAgents(contrAgents_server);
-        setCommodityDictionary(commodityDictionary_server);
+        if (response?.defaultCurrencyCode) {
+            const commodityDictionary_server = changeLabel(commodityDictionary, response.defaultCurrencyCode);
+            setCommodityDictionary(commodityDictionary_server);
+        }
     }, [response]);
+    useEffect(() => {
+        const commodityDictionary_server = setResponseMapper(commodityDictionary, server_commodityDictionary);
+        setCommodityDictionary(commodityDictionary_server);
+    }, [server_commodityDictionary]);
     const setContrAgent = () => {
         const controlValue = dogovorDictionary[3].value;
         const organizationInformation_server = organizationInformation?.map((item) => {
-            return {...item, value: controlValue !== "" ? response.contrAgents[controlValue][item.server] : "", disabled: true};
+            return {...item, value: controlValue !== "" ? response.contrAgents.find((el) => el.dog_number === controlValue)[item.server] : "", disabled: true};
         });
         const personInformation_server = personInformation?.map((item) => {
-            return {...item, value: controlValue !== "" ? response.contrAgents[controlValue][item.server] : "", disabled: true};
+            return {...item, value: controlValue !== "" ? response.contrAgents.find((el) => el.dog_number === controlValue)[item.server] : "", disabled: true};
         });
         const res = [
             {name: "Информация об организации", items: organizationInformation_server},
@@ -360,7 +406,6 @@ function MainScreen() {
             !isAll_personInformation.length &&
             !isAll_contrAgents.length &&
             !isAll_availableTransport.length &&
-            organization_types_server !== "" &&
             typesDelivery_server !== "" &&
             isAll_unloadingBasis
             ) {
@@ -377,7 +422,6 @@ function MainScreen() {
                 const availableTransport_result = availableTransport
                     ?.map((element) => changeAvailableTransport_result_custom(element, availableTransport));
                 
-                const org_type_id = {fieldName: "org_type_id", value: organization_types_server};
                 
                 const delivery_conditions_id = {fieldName: "deliv_cond_id", value: typesDelivery_server};
                 
@@ -389,7 +433,6 @@ function MainScreen() {
                     ...personInformation_result,
                     ...contrAgents_result,
                     ...availableTransport_result,
-                    org_type_id,
                     delivery_conditions_id,
                     unloading_basis_id,
                 ];
@@ -405,7 +448,6 @@ function MainScreen() {
         contrAgents,
         availableTransport,
         commodityDictionary,
-        organization_types_server,
         typesDelivery_server,
         unloadingBasis,
     ]);
@@ -453,8 +495,8 @@ function MainScreen() {
     const deleteCommodityDictionary = async () => {
         const res = await deleteSection(productPosition_active);
         if (res) {
-            setProductPosition_active(productPosition_active - 1);
-            const response = await showSection(productPosition_active - 1);
+            setProductPosition_active(productPosition_active);
+            const response = await showSection(productPosition_active);
             const resArray = [];
             for (let i = 0; i < response.data.sectionCount + 1; i++) {
                 resArray.push({ index: i, value: i + 1, label: i + 1 })
@@ -470,52 +512,39 @@ function MainScreen() {
         }
     };
     const changeProductPosition_active = (value) => {
-        const isAll_commodityDictionary = commodityDictionary.filter((el) => !el.value && el.require);
-        if (!isAll_commodityDictionary?.length) {
-            const res = commodityDictionary?.map((element) => {
-                if (element.fieldName === "product_name") {
-                    const field_name = Object.values(element.controlValue)?.find((el) => el.product_name === element.value)?.product_name;
-                    return { fieldName: element.fieldName, value: field_name };
-                }
-                return { fieldName: element.fieldName, value: element.value };
-            });
-            const item = Object.values(response.commodityDictionary)?.find((el) => el.product_name === commodityDictionary[0].value)?.ttnProductQty;
-            res.push({fieldName: "ttn_max_qty", value: item});
-            res.push({fieldName: "ttn_commodity_position", value: productPosition_active});
-            updateCommodityDictionary(res);
-        }
-        setProductPosition_active(value)
+        setProductPosition_prev(productPosition_active);
+        setProductPosition_active(value);
     };
 
     return (
         <div id="main-screen">
-            {organization_types.length && <Form label="Выберите вид контрагента" items={organization_types} value={organization_types_server} change={changeOrganizationTypes} />}
-            {organization_types_server
-                &&
-                <ActCard
-                    unloadingBasis={unloadingBasis}
-                    delivery={typesDelivery_server}
-                    changeDelivery={(deliv) => setDelivery_server(deliv)}
-                    changeType={changeType}
-                    changeStep={(step) => setStep(step)}
-                    items={activeFormItems}
-                    updatedItems={updatedItems}
-                    typesDelivery={typesDelivery}
-                    addCar={addCar}
-                    addProduct={addProduct}
-                    tnOrTtn={tnOrTtn}
-                    changeTnOrTtn={changeTnOrTtn}
-                    resSteps={resSteps}
-                    isShowSample={isShowSample}
-                    clickSample={clickSample}
-                    changeDate={changeDate}
-                    isShowAddCommodityDictionary={isShowAddCommodityDictionary}
-                    addCommodityDictionary={addCommodityDictionary}
-                    productPosition={productPosition}
-                    productPosition_active={productPosition_active}
-                    changeProductPosition_active={changeProductPosition_active}
-                    deleteCommodityDictionary={deleteCommodityDictionary}
-                />}
+            <ActCard
+                unloadingBasis={unloadingBasis}
+                delivery={typesDelivery_server}
+                changeDelivery={(deliv) => setDelivery_server(deliv)}
+                changeType={changeType}
+                changeStep={(step) => setStep(step)}
+                items={activeFormItems}
+                updatedItems={updatedItems}
+                typesDelivery={typesDelivery}
+                addCar={addCar}
+                addProduct={addProduct}
+                addDogovor={addDogovor}
+                tnOrTtn={tnOrTtn}
+                changeTnOrTtn={changeTnOrTtn}
+                resSteps={resSteps}
+                isShowSample={isShowSample}
+                clickSample={clickSample}
+                changeDate={changeDate}
+                isShowAddCommodityDictionary={isShowAddCommodityDictionary}
+                addCommodityDictionary={addCommodityDictionary}
+                productPosition={productPosition}
+                productPosition_active={productPosition_active}
+                changeProductPosition_active={changeProductPosition_active}
+                deleteCommodityDictionary={deleteCommodityDictionary}
+                getNewCurrencies={getNewCurrencies}
+                commodityDictionary={commodityDictionary}
+            />
         </div>
     );
 }

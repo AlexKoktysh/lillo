@@ -6,7 +6,11 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import moment from "moment/moment.js";
 
 function DatePickerControl(props) {
-    const defaultDate = props.item.value ? moment(props.item.value, 'YYYY-MM-DD').format('YYYY-MM-DD') : moment().format('YYYY-MM-DD');
+    const setPropsDate = (value) => {
+        const propsDate = props.item.value.includes(".");
+        return propsDate ? moment(props.item.value, 'DD.MM.YYYY') : moment(props.item.value, 'YYYY-MM-DD')
+    };
+    const defaultDate = props.item.value ? setPropsDate(props.item.value).format('YYYY-MM-DD') : moment().format('YYYY-MM-DD');
     const [date, setDate] = useState(defaultDate);
     const change = (value) => {
         const date = moment(value.$d).format('YYYY-MM-DD');

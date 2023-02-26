@@ -8,8 +8,13 @@ function TextFieldControl(props) {
     const [value, setValue] = useState(props.item.value);
 
     const changeInput = (event) => {
-        setValue(event.target.value);
-        props.change(props.item, event.target.value);
+        let val = event.target.value;
+        if (props.item.fieldName === "product_qty") {
+            const max_qty = props.commodityDictionary[0]?.currencies?.find((el) => el.label === props.commodityDictionary[0].value)?.ttn_max_qty;
+            val = Number(event.target.value) <= Number(max_qty) ? event.target.value : max_qty;
+        }
+        setValue(val);
+        props.change(props.item, val);
     };
     const changeDate = (label, value) => {
         setValue(value);
@@ -24,6 +29,8 @@ function TextFieldControl(props) {
                 return props.addProduct(props.item, value);
             case "Транспорт":
                 return props.addCar(props.item, value);
+            case "Номер договора":
+                return props.addDogovor(props.item, value);
             default:
                 return;
         }
@@ -52,7 +59,7 @@ function TextFieldControl(props) {
                                 ))}
                             </TextField>
                         )
-                        : (<Autocomplete item={props.item} key={props.item.index} saveCar={saveCar} />)
+                        : (<Autocomplete item={props.item} key={props.item.index} saveCar={saveCar} getNewCurrencies={props.getNewCurrencies} />)
                 )
                 : <DatePickerControl item={props.item} change={changeDate} />
             }

@@ -10,16 +10,14 @@ const instance = axios.create({
 });
 instance.interceptors.response.use(
     (response) => response,
-    (error) => alert((error))
+    (error) => checkError(error)
 );
-
-export const getOrganizationTypes = async () => {
-    const response = await instance.get("organisation_types");
-    return response.data;
+const checkError = (error) => {
+    alert(error.message);
 };
 
 export const getDataForCreateTtn = async () => {
-    const response = await instance.post("get_data_for_create_ttn", { "orgType": 1 });
+    const response = await instance.post("get_data_for_create_ttn");
     return response.data;
 };
 
@@ -56,4 +54,5 @@ export const updateCommodityDictionary = async (params) => {
 
 export const getCommodityDictionary = async (searchText) => {
     const response = await instance.post("get_commodity_dictionary",  { filter: searchText });
+    return response.data;
 };
