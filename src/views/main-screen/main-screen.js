@@ -18,6 +18,7 @@ import {
     unloading_basis,
     personInformation_default,
     tnOrTtnField,
+    templateViewField,
     steps,
 } from "../../constants/index.js";
 import "./main-screen.scss";
@@ -49,6 +50,7 @@ function MainScreen() {
     const [commodityDictionary, setCommodityDictionary] = useState(commodityDictionary_default);
     const [unloadingBasis, setUnloadingBasis] = useState(unloading_basis);
     const [tnOrTtn, setTnOrTtn] = useState(tnOrTtnField);
+    const [templateView, setTemplateView] = useState(templateViewField);
     const [resSteps, setResSteps] = useState(steps);
     const [isShowSample, setIsShowSample] = useState(false);
     const [isShowAddCommodityDictionary, setIsShowAddCommodityDictionary] = useState(false);
@@ -58,6 +60,7 @@ function MainScreen() {
     const [server_commodityDictionary, setServer_commodityDictionary] = useState({});
     const [productPosition_prev, setProductPosition_prev] = useState(1);
     const [isTTN, setIsTTN] = useState(true);
+    const [labelDeliv, setLabelDeliv] = useState("");
     useEffect(() => {
         const fetch = async () => {
             const response = await getDataForCreateTtn();
@@ -65,6 +68,16 @@ function MainScreen() {
         };
         fetch();
     }, []);
+    useEffect(() => {
+        switch (typesDelivery_server) {
+            case "1":
+                return setLabelDeliv("Количество дней");
+            case "2":
+                return setLabelDeliv("Процентов");
+            default:
+                return setLabelDeliv("");
+        }
+    }, [typesDelivery_server]);
     useEffect(() => {
         const fetchCommodity = async () => {
             const response = await getCommodityDictionary("");
@@ -470,6 +483,16 @@ function MainScreen() {
         });
         setTnOrTtn(changeItem);
     };
+    const changeTemplateView = (val) => {
+        const changeItem = templateView?.map((el) => {
+            if (el.value === val) {
+                return {...el, checked: true};
+            } else {
+                return {...el, checked: false};
+            }
+        });
+        setTemplateView(changeItem);
+    };
     const clickSample = async () => {
         await sendTemplate(serverResult);
     };
@@ -535,6 +558,8 @@ function MainScreen() {
                 addDogovor={addDogovor}
                 tnOrTtn={tnOrTtn}
                 changeTnOrTtn={changeTnOrTtn}
+                templateView={templateView}
+                changeTemplateView={changeTemplateView}
                 resSteps={resSteps}
                 isShowSample={isShowSample}
                 clickSample={clickSample}
@@ -547,6 +572,7 @@ function MainScreen() {
                 deleteCommodityDictionary={deleteCommodityDictionary}
                 getNewCurrencies={getNewCurrencies}
                 commodityDictionary={commodityDictionary}
+                labelDeliv={labelDeliv}
             />
         </div>
     );

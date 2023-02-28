@@ -1,9 +1,3 @@
-export const organizationTypes = [
-    { index: "0", value: "1", label: "Индивидуальный предприниматель" },
-    { index: "1", value: "2", label: "Организация" },
-    { index: "2", value: "0", label: "Физическое лицо" },
-];
-
 export const unloading_basis = [
     { value: 1, label: "Договор", index: 0 },
     { value: 2, label: "Счет", index: 1 },
@@ -108,6 +102,10 @@ export const commodityDictionary_default = [
 export const tnOrTtnField = [
     { index: "0", value: "1", label: "ТН", checked: false },
     { index: "1", value: "2", label: "ТТН", checked: false },
+];
+export const templateViewField = [
+    { index: "0", value: "1", label: "Вертикально", checked: false },
+    { index: "1", value: "2", label: "Горизонтально", checked: false },
 ];
 export const availableTransport_default = [
     {

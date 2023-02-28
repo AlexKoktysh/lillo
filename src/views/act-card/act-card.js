@@ -5,21 +5,31 @@ import TextFieldControl from "../../components/TextfieldControl/text-field-contr
 import AccordionControl from "../../components/Accordion/accordion-control.js";
 import Box from '@mui/material/Box';
 import { Button } from "@mui/material";
+import { TextField } from "@mui/material";
 
 function ActCard(props) {
     const [step, setStep] = useState("1");
     const [type, setType] = useState("");
     const [delivery, setDelivery] = useState(props.delivery);
     const [localPosition, setLocalPosition] = useState(props.productPosition_active);
+    const [labelDeliv, setLabelDeliv] = useState(props.labelDeliv);
 
     const [entityType, setEntityType] = useState(props.tnOrTtn.find((el) => el.checked)?.value || "");
+    const [templateView, setTemplateView] = useState(props.templateView.find((el) => el.checked)?.value || "");
     const changeTnOrTtn = (val) => {
         setEntityType(val);
         props.changeTnOrTtn(val);
     };
+    const changeTemplateView = (val) => {
+        setTemplateView(val);
+        props.changeTemplateView(val);
+    };
     useEffect(() => {
         setLocalPosition(props.productPosition_active);
     }, [props.productPosition_active]);
+    useEffect(() => {
+        setLabelDeliv(props.labelDeliv);
+    }, [props.labelDeliv]);
 
     const changeStep = (value) => {
         setStep(value);
@@ -67,9 +77,11 @@ function ActCard(props) {
             <div className="form">
                 {step === "4" && <Form label="Позиция" value={localPosition} items={props.productPosition} change={changePosition} />}
                 {step === "3" && <Form label="Тип накладной" value={entityType} items={props.tnOrTtn} change={changeTnOrTtn} />}
+                {step === "3" && <Form label="Вид шаблона" value={templateView} items={props.templateView} change={changeTemplateView} />}
                 {listItems}
                 {step === "2" && Array.isArray(props.items[0].items) && <AccordionControl items={props.items} />}
                 {step === "1" && props.typesDelivery && <Box sx={{ mb: 2 }}><Form label="Выберите вид поставки" value={delivery} items={props.typesDelivery} change={changeDelivery} /></Box>}
+                {step === "1" && labelDeliv && <Box sx={{ mb: 2 }}><TextField size="small" label={labelDeliv} /></Box>}
                 {step === "4"
                     &&
                     <Box sx={{ mb: 4, mt: 4, display: 'flex', justifyContent: 'space-between' }}>
