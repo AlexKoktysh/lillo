@@ -57,17 +57,13 @@ function MainScreen() {
     const [productPosition_active, setProductPosition_active] = useState(1);
     const [server_commodityDictionary, setServer_commodityDictionary] = useState({});
     const [productPosition_prev, setProductPosition_prev] = useState(1);
+    const [isTTN, setIsTTN] = useState(true);
     useEffect(() => {
         const fetch = async () => {
             const response = await getDataForCreateTtn();
             setResponse(response);
         };
-        const fetchCommodity = async () => {
-            const response = await getCommodityDictionary("");
-            setServer_commodityDictionary(response);
-        }
         fetch();
-        fetchCommodity();
     }, []);
     useEffect(() => {
         const fetchCommodity = async () => {
@@ -394,18 +390,23 @@ function MainScreen() {
         }
     }, [step, dogovorDictionary, contrAgents, availableTransport, commodityDictionary]);
     useEffect(() => {
+        const checkedTTN = tnOrTtn.filter((el) => el.checked)[0]?.label === "ТТН";
+        setIsTTN(checkedTTN);
+    }, [tnOrTtn]);
+    useEffect(() => {
         const isAll_dogovorDictionary = dogovorDictionary.filter((el) => el.value === "" && el.require);
         const isAll_organizationInformation = organizationInformation.filter((el) => el.value === "" && el.require);
         const isAll_personInformation = personInformation.filter((el) => el.value === "" && el.require);
         const isAll_contrAgents = contrAgents.filter((el) => el.value === "" && el.require);
         const isAll_availableTransport = availableTransport.filter((el) => el.value === "" && el.require);
         const isAll_unloadingBasis = unloadingBasis.find((el) => el.checked);
+        const ttn_show = isTTN ? !isAll_availableTransport.length : true;
         if (
             !isAll_dogovorDictionary.length &&
             !isAll_organizationInformation.length &&
             !isAll_personInformation.length &&
             !isAll_contrAgents.length &&
-            !isAll_availableTransport.length &&
+            ttn_show &&
             typesDelivery_server !== "" &&
             isAll_unloadingBasis
             ) {
@@ -419,8 +420,9 @@ function MainScreen() {
                 
                 const contrAgents_result = contrAgents?.map((element) => changeContrAgentsResult_custom(element));
                 
-                const availableTransport_result = availableTransport
-                    ?.map((element) => changeAvailableTransport_result_custom(element, availableTransport));
+                const availableTransport_result = isTTN
+                    ? availableTransport?.map((element) => changeAvailableTransport_result_custom(element, availableTransport))
+                    : [];
                 
                 
                 const delivery_conditions_id = {fieldName: "deliv_cond_id", value: typesDelivery_server};
@@ -450,6 +452,7 @@ function MainScreen() {
         commodityDictionary,
         typesDelivery_server,
         unloadingBasis,
+        isTTN,
     ]);
     const changeType = (value) => {
         const changeUnloadingBasis = unloadingBasis?.map((el) => {
